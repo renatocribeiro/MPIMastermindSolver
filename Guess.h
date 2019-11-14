@@ -8,6 +8,7 @@
 #include <vector>
 #include <random>
 #include <iterator>
+#include <set>
 
 
 class Guess {
@@ -21,8 +22,15 @@ public:
     }
 
     int size(){return guess.size();};
+    void erase(const size_t &idx){guess.erase(guess.begin()+idx);};
     int &operator[](int idx){return guess[idx];};
     void display_guess();
+    explicit operator std::set<int>() const {
+        //return guess;
+        std::set<int> res;
+        for(int gues : guess) res.insert(gues);
+        return res;
+    }
 };
 
 

@@ -48,6 +48,8 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
+        //this needs to be replaced to create the combinations of possible guesses dynamically
+
         ch = Challenger(id, size_secret, nbr_colors, all_guesses);
 
 
