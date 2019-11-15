@@ -12,7 +12,7 @@
 class Gamemaster {
 
     private:
-        Guess * secret;
+        Guess secret;
 
     public:
         Gamemaster(const int &size_secret){
@@ -21,9 +21,10 @@ class Gamemaster {
             for(size_t i = 0; i<guess_vect.size(); i++){
                 guess_vect[i] = i;
             }
-            secret = new Guess(guess_vect);
-
-            //secret->display_guess();
+            secret = Guess(guess_vect);
+            std::cout<<"secret: ";
+            secret.display_guess();
+            std::cout<<std::endl;
         }
 
         Gamemaster(){}

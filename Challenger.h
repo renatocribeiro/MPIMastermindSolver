@@ -32,7 +32,18 @@ public:
     }
 
     void update_guesses_left(std::vector<int> to_pop) {
-        for(auto guess: to_pop) std::cout<<guess<<std::endl;
+        for(auto elem: to_pop) guesses_left[elem] = false;
+
+        if(id == 1){
+            for(size_t i = 0; i<guesses_left.size(); i++){
+                if(guesses_left[i]){
+                    guesses[i].display_guess();
+                    std::cout<<std::endl;
+
+                }
+            }
+        }
+
     }
 };
 

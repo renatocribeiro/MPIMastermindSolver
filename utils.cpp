@@ -13,6 +13,7 @@ struct evaluation {
 
 
 evaluation evaluate_guess(Guess secret, Guess guess2){
+
     /*
     std::cout<<":::"<<std::endl;
 
@@ -38,9 +39,10 @@ evaluation evaluate_guess(Guess secret, Guess guess2){
     std::set_intersection(secret_set.begin(), secret_set.end(), guess_set.begin(), guess_set.end(), std::inserter(secret_inter_guess,secret_inter_guess.begin()));
 
     result.only_color = secret_inter_guess.size();
-    /*
-    result.display();
 
+
+
+    /*
     std::cout<<":::"<<std::endl;
     std::cout<<std::endl;
     */

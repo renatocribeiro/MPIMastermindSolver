@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
         //std::cout<<"id:"<<id<<" from:"<<(id-1)*local_partition_size<<"to: "<<local_partition_size*id-1<<std::endl;
 
         evaluation last_eval = {2, 1};
-        std::vector<int> tmp_last_guess = {0, 1, 2};
+        std::vector<int> tmp_last_guess = {2, 1, 0};
         Guess last_guess = Guess(tmp_last_guess);
 
         int from, end;
