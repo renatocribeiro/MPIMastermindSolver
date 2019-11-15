@@ -23,20 +23,16 @@ public:
     }
     Challenger(){}
 
-    void filter_guesses(const int &from, const int &end, const evaluation &last_evaluation, Guess &last_guess) {
+    std::vector<int> filter_guesses(const int &from, const int &end, evaluation &last_evaluation, Guess &last_guess) {
+        std::vector<int> to_pop;
         for(size_t i=from;i<=end;i++){
-            /*
-            std::cout<<id<<"___";
-            guesses[i].display_guess();
-            std::cout<<std::endl;
-            */
-            if(evaluate_guess(guesses[i], last_guess) == last_evaluation){
-                std::cout<<"ok"<<std::endl;
-
-            }
-
+            if(evaluate_guess(guesses[i], last_guess) != last_evaluation) to_pop.push_back(i);
         }
+        return to_pop;
+    }
 
+    void update_guesses_left(std::vector<int> to_pop) {
+        for(auto guess: to_pop) std::cout<<guess<<std::endl;
     }
 };
 

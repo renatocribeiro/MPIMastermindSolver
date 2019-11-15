@@ -6,6 +6,7 @@ struct evaluation {
     int only_color = 0;
     int perfect = 0;
     bool operator==(const evaluation& rhs) {return only_color == rhs.only_color and perfect == rhs.perfect;};
+    bool operator!=(const evaluation& rhs) {return !(*this==rhs);};
     void display(){std::cout<<"p: "<<perfect<<", co: "<<only_color<<std::endl;};
 };
 
@@ -37,10 +38,11 @@ evaluation evaluate_guess(Guess secret, Guess guess2){
     std::set_intersection(secret_set.begin(), secret_set.end(), guess_set.begin(), guess_set.end(), std::inserter(secret_inter_guess,secret_inter_guess.begin()));
 
     result.only_color = secret_inter_guess.size();
-
+    /*
     result.display();
 
     std::cout<<":::"<<std::endl;
     std::cout<<std::endl;
+    */
     return result;
 };
