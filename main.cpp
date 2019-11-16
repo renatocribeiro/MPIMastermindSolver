@@ -63,8 +63,7 @@ int main(int argc, char *argv[]) {
 
     }
     else{
-        int nbr_rows = (int) std::pow(nbr_colors, size_secret);
-        //int all_guesses[nbr_rows][size_secret];
+        //int all_guesses[nbr_guesses_left][size_secret];
         std::vector<Guess> all_guesses;
         //this needs to be replaced to create the combinations of possible guesses dynamically
         for (size_t i=0; i<nbr_colors; i++){
@@ -79,43 +78,35 @@ int main(int argc, char *argv[]) {
                 }
             }
         }
-        //this needs to be replaced to create the combinations of possible guesses dynamically
 
-        auto rng = std::default_random_engine {};
-        std::shuffle(all_guesses.begin(), all_guesses.end(), rng);
-
-        ch = Challenger(id, size_secret, nbr_colors, all_guesses);
+        ch = Challenger(challengers_rank, size_secret, nbr_colors, all_guesses);
 
 
 
-        int partitions[nb_instance];
-        int partition_size = (int) (nbr_rows / (nb_instance - 1));
-        if(id == 1) {
-            //std::cout<<partition_size<<std::endl;
-            for (size_t i = 0; i < nb_instance; i++) {
-                partitions[i] = partition_size;
-                //std::cout << id << "__" << partitions[i] << std::endl;
-            }
-        }
+        //CREATE PARTITIONS AND SCATTER THEM
+        int nbr_guesses_left = ch.get_number_guesses_left();
+        int partition_size = ceil(nbr_guesses_left / (challengers_size));
+
+        std::vector<int> partitions(nb_instance, partition_size);
+        partitions[-1] += nbr_guesses_left - (partition_size * challengers_size);
+
         int local_partition_size;
-        MPI_Scatter(partitions, 1, MPI_INT, &local_partition_size, 1, MPI_INT, 1, MPI_COMM_WORLD);
-        //std::cout<<id<<"::"<<local_partition_size<<std::endl;
-        //std::cout<<"id:"<<id<<" from:"<<(id-1)*local_partition_size<<"to: "<<local_partition_size*id-1<<std::endl;
+        MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, challengers_comm);
+
+
 
         evaluation last_eval = {2, 1};
         std::vector<int> tmp_last_guess = {2, 1, 0};
         Guess last_guess = Guess(tmp_last_guess);
 
+        //DEFINE WHERE EACH PROCESS STARTS AND THE NUMBER OF GUESSES IT MUST CHECK
         int from, end;
-        from = (id-1)*local_partition_size;
-        end = local_partition_size*id-1;
+        from = challengers_rank*local_partition_size;
+        end = local_partition_size*(challengers_rank + 1);
 
-
+        //FILTERS THE ACTUAL GUESSES AND RETURNS THE IDX OF THE GUESSES THAT ARENT PART OF THE SOLUTION ANYMORE
         std::vector<int> to_pop;
         to_pop = ch.filter_guesses(from, end, last_eval, last_guess);
-        for(auto f: to_pop){
-            //std::cout<<challengers_rank<<":"<<f<<std::endl;
-        }
         int size_seperate_pop = to_pop.size();
 
         //SHARE INDIVIDUAL TO_POP SIZES

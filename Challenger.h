@@ -13,10 +13,10 @@ class Challenger {
 private:
     std::vector<Guess> guesses;
     std::vector<bool> guesses_left;
-    int id;
+    int ch_id;
 public:
     Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color, const std::vector<Guess> &all_guesses){
-        id = challenger_id;
+        ch_id = challenger_id;
         guesses = all_guesses;
         guesses_left = std::vector<bool>(all_guesses.size(), true);
 
@@ -25,25 +25,27 @@ public:
 
     std::vector<int> filter_guesses(const int &from, const int &end, evaluation &last_evaluation, Guess &last_guess) {
         std::vector<int> to_pop;
-        for(size_t i=from;i<=end;i++){
-            if(evaluate_guess(guesses[i], last_guess) != last_evaluation) to_pop.push_back(i);
-        }
+        //for(size_t i=from;i<=end;i++){
+
+        for(size_t i = from; i<end;){
+                if(guesses_left[i] == true) {
+                    if (evaluate_guess(guesses[i], last_guess) != last_evaluation) to_pop.push_back(i);
+                    //std::cout<<ch_id<<"-"<<i<<std::endl;
+                    i++;
+                }
+            }
         return to_pop;
     }
 
     void update_guesses_left(std::vector<int> to_pop) {
         for(auto elem: to_pop) guesses_left[elem] = false;
-
-        if(id == 1){
-            for(size_t i = 0; i<guesses_left.size(); i++){
-                if(guesses_left[i]){
-                    guesses[i].display_guess();
-                    std::cout<<std::endl;
-
-                }
-            }
+    }
+    int get_number_guesses_left(){
+        int result = 0;
+        for(auto f:guesses_left){
+            if (f) result++;
         }
-
+        return result;
     }
 };
 
