@@ -1,11 +1,18 @@
 #include <iostream>
 #include <mpi.h>
-#include "Gamemaster.h"
-#include "Challenger.h"
-#include "Guess.h"
 #include <vector>
 #include <cmath>
-#include <random>
+
+
+//#include "Utils.h"
+#include "Guess.h"
+#include "Challenger.h"
+
+#include "Gamemaster.h"
+//#include "Evaluation.h"
+//#include "utils.cpp"
+
+
 
 int main(int argc, char *argv[]) {
     int id, nb_instance, len;
@@ -55,20 +62,23 @@ int main(int argc, char *argv[]) {
 
 
 
-
+    int msg;
     if (id == gm_id){
         gm = Gamemaster(size_secret);
-
-
-
+        msg = -1;
     }
-    else{
+    MPI_Bcast(&msg, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    //THIS IS DONE ONLY ONCE
+    if(id != gm_id and msg == -1) {
+        std::cout<<"lets start"<<std::endl;
+
         //int all_guesses[nbr_guesses_left][size_secret];
         std::vector<Guess> all_guesses;
         //this needs to be replaced to create the combinations of possible guesses dynamically
-        for (size_t i=0; i<nbr_colors; i++){
-            for (size_t j=0; j<nbr_colors; j++){
-                for (size_t k=0; k<nbr_colors; k++){
+        for (size_t i = 0; i < nbr_colors; i++) {
+            for (size_t j = 0; j < nbr_colors; j++) {
+                for (size_t k = 0; k < nbr_colors; k++) {
                     std::vector<int> tmp;
                     tmp.push_back(i);
                     tmp.push_back(j);
@@ -81,28 +91,48 @@ int main(int argc, char *argv[]) {
 
         ch = Challenger(challengers_rank, size_secret, nbr_colors, all_guesses);
 
+    }
 
 
+
+
+    int nbr_guesses_left, partition_size, local_partition_size, from, end;
+    Guess new_guess;
+    std::vector<int> new_guess_int;
+
+
+    if(id != gm_id){
         //CREATE PARTITIONS AND SCATTER THEM
-        int nbr_guesses_left = ch.get_number_guesses_left();
-        int partition_size = ceil(nbr_guesses_left / (challengers_size));
+        nbr_guesses_left = ch.get_number_guesses_left();
+        partition_size = ceil(nbr_guesses_left / (challengers_size));
 
         std::vector<int> partitions(nb_instance, partition_size);
         partitions[-1] += nbr_guesses_left - (partition_size * challengers_size);
 
-        int local_partition_size;
         MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, challengers_comm);
 
+        //DEFINE WHERE EACH PROCESS STARTS AND THE NUMBER OF GUESSES IT MUST CHECK
+        from = challengers_rank*local_partition_size;
+        end = local_partition_size*(challengers_rank + 1);
+
+        new_guess = ch.get_guess(from, end);
+        new_guess_int = (std::vector<int>) new_guess;
+        //new_guess.display_guess();
+        //std::cout<<std::endl;
+
+    }
+
+    if(id != gm_id){
 
 
-        evaluation last_eval = {2, 1};
+
+
+
+        Evaluation last_eval = {2, 1};
         std::vector<int> tmp_last_guess = {2, 1, 0};
         Guess last_guess = Guess(tmp_last_guess);
 
-        //DEFINE WHERE EACH PROCESS STARTS AND THE NUMBER OF GUESSES IT MUST CHECK
-        int from, end;
-        from = challengers_rank*local_partition_size;
-        end = local_partition_size*(challengers_rank + 1);
+
 
         //FILTERS THE ACTUAL GUESSES AND RETURNS THE IDX OF THE GUESSES THAT ARENT PART OF THE SOLUTION ANYMORE
         std::vector<int> to_pop;

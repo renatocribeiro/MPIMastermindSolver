@@ -15,22 +15,29 @@ class Guess {
 private:
     std::vector<int> guess;
 public:
-    Guess(){}
+    Guess(){
+        guess = std::vector<int>(1, -2);
+    }
 
     Guess(const std::vector<int> guess_vect){
         guess = guess_vect;
     }
 
-    int size(){return guess.size();};
-    void erase(const size_t &idx){guess.erase(guess.begin()+idx);};
-    int &operator[](int idx){return guess[idx];};
+    int size();
+    void erase(const size_t &idx);
     void display_guess();
-    explicit operator std::set<int>() const {
+    int &operator[](int idx){return guess[idx];};
+    operator std::set<int>() const {
         //return guess;
         std::set<int> res;
         for(int gues : guess) res.insert(gues);
         return res;
     }
+
+    explicit operator std::vector<int>() const {
+        return guess;
+    }
+
 };
 
 

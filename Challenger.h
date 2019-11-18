@@ -7,7 +7,9 @@
 
 #include <vector>
 #include <algorithm>
-#include "utils.cpp"
+#include "Guess.h"
+#include "Evaluation.h"
+#include "Utils.h"
 
 class Challenger {
 private:
@@ -23,19 +25,7 @@ public:
     }
     Challenger(){}
 
-    std::vector<int> filter_guesses(const int &from, const int &end, evaluation &last_evaluation, Guess &last_guess) {
-        std::vector<int> to_pop;
-        //for(size_t i=from;i<=end;i++){
-
-        for(size_t i = from; i<end;){
-                if(guesses_left[i] == true) {
-                    if (evaluate_guess(guesses[i], last_guess) != last_evaluation) to_pop.push_back(i);
-                    //std::cout<<ch_id<<"-"<<i<<std::endl;
-                    i++;
-                }
-            }
-        return to_pop;
-    }
+    std::vector<int> filter_guesses(const int &from, const int &end, Evaluation &last_evaluation, Guess &last_guess);
 
     void update_guesses_left(std::vector<int> to_pop) {
         for(auto elem: to_pop) guesses_left[elem] = false;
@@ -47,6 +37,18 @@ public:
         }
         return result;
     }
+
+    Guess get_guess(int from, int end){
+        Guess result;
+        int cnt = 0;
+        for(size_t i = from; i<guesses.size(); i++){
+            if(guesses_left[i] == true){
+                return guesses[i];
+            }
+        }
+        return result;
+    }
+
 };
 
 

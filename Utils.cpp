@@ -1,18 +1,11 @@
 //
-// Created by rena on 11.11.19.
+// Created by rena on 18.11.19.
 //
 
-struct evaluation {
-    int only_color = 0;
-    int perfect = 0;
-    bool operator==(const evaluation& rhs) {return only_color == rhs.only_color and perfect == rhs.perfect;};
-    bool operator!=(const evaluation& rhs) {return !(*this==rhs);};
-    void display(){std::cout<<"p: "<<perfect<<", co: "<<only_color<<std::endl;};
-};
+#include "Utils.h"
+#include <algorithm>
 
-
-
-evaluation evaluate_guess(Guess secret, Guess guess2){
+Evaluation evaluate_guess(Guess secret, Guess guess2){
 
     /*
     std::cout<<":::"<<std::endl;
@@ -24,7 +17,7 @@ evaluation evaluate_guess(Guess secret, Guess guess2){
     std::cout<<std::endl;
     */
 
-    evaluation result;
+    Evaluation result;
 
     for(unsigned int i = secret.size(); i-- > 0;){
         if (secret[i] == guess2[i]){
