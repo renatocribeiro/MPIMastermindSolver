@@ -98,7 +98,8 @@ int main(int argc, char *argv[]) {
 
     int nbr_guesses_left, partition_size, local_partition_size, from, end;
     Guess new_guess;
-    std::vector<int> new_guess_int;
+    std::vector<int> new_guess_int(size_secret, -2);
+
 
 
     if(id != gm_id){
@@ -122,9 +123,19 @@ int main(int argc, char *argv[]) {
 
     }
 
+    //GATHERS ALL PROPOSITIONS IN GAMEMASTER
+    int size_all_guesses;
+    std::vector<int> gathered_guesses;
+    if(id == gm_id){
+        size_all_guesses = size_secret*nb_instance;
+        gathered_guesses = std::vector<int>(size_all_guesses);
+    }
+    MPI_Gather(&new_guess_int[0], size_secret, MPI_INT,
+            &gathered_guesses[0], size_secret, MPI_INT,
+            0, MPI_COMM_WORLD);
+
+
     if(id != gm_id){
-
-
 
 
 
