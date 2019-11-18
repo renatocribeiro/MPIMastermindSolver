@@ -28,6 +28,9 @@ class Gamemaster {
         }
 
         Gamemaster(){}
+        Evaluation evaluate(std::vector<int> guess){
+            return evaluate_guess(secret, guess);
+        }
 };
 
 

@@ -134,10 +134,31 @@ int main(int argc, char *argv[]) {
             &gathered_guesses[0], size_secret, MPI_INT,
             0, MPI_COMM_WORLD);
 
+    std::vector<int> picked_guess(size_secret);
+    int pos;
+    Evaluation feedback;
+    if(id == gm_id) {
+        //PICK FIRST GUESS
+        size_t i = 0;
+        bool found = false;
+        while(!found and i<nb_instance){
+            pos = i*size_secret;
+            if(gathered_guesses[pos] != -2){
+                picked_guess = std::vector<int>(gathered_guesses.begin() + pos, gathered_guesses.begin() + pos + size_secret);
+                found = true;
+            }
+            i++;
+        }
+
+        //EVALUATES PICKED GUESS
+        feedback = gm.evaluate(picked_guess);
+        for(auto f: picked_guess){std::cout<<f<<" ";}
+        std::cout<<std::endl;
+        std::cout<<feedback.only_color<<"_"<<feedback.perfect<<std::endl;
+    }
+
 
     if(id != gm_id){
-
-
 
         Evaluation last_eval = {2, 1};
         std::vector<int> tmp_last_guess = {2, 1, 0};
