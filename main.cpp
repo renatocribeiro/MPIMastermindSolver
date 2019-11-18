@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
             &gathered_guesses[0], size_secret, MPI_INT,
             0, MPI_COMM_WORLD);
 
-    std::vector<int> picked_guess(size_secret);
+    std::vector<int> picked_guess_int(size_secret);
     int pos;
     Evaluation feedback;
     if(id == gm_id) {
@@ -144,31 +144,26 @@ int main(int argc, char *argv[]) {
         while(!found and i<nb_instance){
             pos = i*size_secret;
             if(gathered_guesses[pos] != -2){
-                picked_guess = std::vector<int>(gathered_guesses.begin() + pos, gathered_guesses.begin() + pos + size_secret);
+                picked_guess_int = std::vector<int>(gathered_guesses.begin() + pos, gathered_guesses.begin() + pos + size_secret);
                 found = true;
             }
             i++;
         }
 
         //EVALUATES PICKED GUESS
-        feedback = gm.evaluate(picked_guess);
-        for(auto f: picked_guess){std::cout<<f<<" ";}
-        std::cout<<std::endl;
-        std::cout<<feedback.only_color<<"_"<<feedback.perfect<<std::endl;
+        feedback = gm.evaluate(picked_guess_int);
     }
 
+    //SEND PICKED GUESS BACK TO ALL THE CHALLENGERS SO THEY CAN FILTER THE FOLLOWING GUESSES
+    MPI_Bcast(&picked_guess_int[0], size_secret, MPI_INT, gm_id, MPI_COMM_WORLD);
 
+    Guess picked_guess = Guess(picked_guess_int);
     if(id != gm_id){
-
-        Evaluation last_eval = {2, 1};
-        std::vector<int> tmp_last_guess = {2, 1, 0};
-        Guess last_guess = Guess(tmp_last_guess);
-
 
 
         //FILTERS THE ACTUAL GUESSES AND RETURNS THE IDX OF THE GUESSES THAT ARENT PART OF THE SOLUTION ANYMORE
         std::vector<int> to_pop;
-        to_pop = ch.filter_guesses(from, end, last_eval, last_guess);
+        to_pop = ch.filter_guesses(from, end, feedback, picked_guess);
         int size_seperate_pop = to_pop.size();
 
         //SHARE INDIVIDUAL TO_POP SIZES
@@ -195,7 +190,6 @@ int main(int argc, char *argv[]) {
 
         //UPDATE THE CHALLENGER LIST OF AVAILABLE GUESS
         ch.update_guesses_left(all_to_pop);
-
 
 
         MPI_Group_free(&challengers_group);

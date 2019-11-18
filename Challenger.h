@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <algorithm>
+#include <iostream>
 #include "Guess.h"
 #include "Evaluation.h"
 #include "Utils.h"
@@ -47,6 +48,15 @@ public:
             }
         }
         return result;
+    }
+    void display_guesses_left(){
+        for(size_t i = 0; i<guesses.size();i++){
+            if(guesses_left[i]){
+                //std::cout<<guesses[i]
+                guesses[i].display_guess();
+                std::cout<<"  "<<guesses_left[i]<<std::endl;
+            }
+        }
     }
 
 };
