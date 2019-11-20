@@ -12,6 +12,7 @@ struct Evaluation {
     bool operator==(const Evaluation& rhs);
     bool operator!=(const Evaluation& rhs);
     void display();
+    bool is_perfect(int size_secret);
 };
 
 

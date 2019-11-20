@@ -4,7 +4,7 @@
 
 #include "Challenger.h"
 
-std::vector<int> Challenger::filter_guesses(const int &from, const int &end, Evaluation &last_evaluation, Guess &last_guess) {
+std::vector<int> Challenger::filter_guesses(Evaluation &last_evaluation, Guess &last_guess) {
     std::vector<int> to_pop;
     //for(size_t i=from;i<=end;i++){
 
