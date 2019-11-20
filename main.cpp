@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
 
     int nbr_guesses_left, partition_size, local_partition_size, from, end;
     //CREATE POSSIBLE GUESSES AND INIT CHALLENGERS.
+    std::vector<int> partitions;
     if (id != gm_id and msg == -1) {
         std::cout << "lets start" << std::endl;
 
@@ -93,7 +94,6 @@ int main(int argc, char *argv[]) {
 
 
 
-        std::vector<int> partitions;
         if(challengers_rank == 0){
             nbr_guesses_left = all_guesses.size();
 
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
         //ch.display_from_end();
 
 
- /*       //JUST TO DEBUG
+/*        //JUST TO DEBUG
         if(id == 1){
             for(size_t i = 0; i<all_guesses.size();i++){
                 std::cout<<i<<":: ";
@@ -253,11 +253,54 @@ int main(int argc, char *argv[]) {
             ch.update_guesses_left(all_to_pop);
 
 
-            if(challengers_rank == 0){
+            //SCATTER NEW PARTITIONS
+            if (challengers_rank == 0){
                 int nbr_guesses_left = ch.get_size() - total_to_pop;
 
-            }
+                partition_size = ceil(nbr_guesses_left / challengers_size);
+                partitions = std::vector<int>(challengers_size, partition_size);
+                int off = nbr_guesses_left - (partition_size * challengers_size);
+                partitions.at(challengers_size - 1) = partitions.at(challengers_size - 1) + off;
 
+            }
+            MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, challengers_comm);
+
+            //DEFINE NEW FROM-END IN A SINGLE FILE
+            int tmp_from = 0;
+            int tmp_end;
+            for(size_t i = 0; i<challengers_size; i++){
+                if(challengers_rank == i){
+                    if(challengers_rank == 0){
+                        //ch.display_guesses_left();
+                        ch.set_from(tmp_from);
+                        ch.find_new_end(local_partition_size);
+                        tmp_end = ch.get_end();
+                        MPI_Send(&tmp_end, 1, MPI_INT, i+1, i, challengers_comm);
+                        //std::cout<<"ch_id: "<<challengers_rank<<" sent: "<<tmp_end<<std::endl;
+                        //ch.display_from_end();
+
+                    } else if(challengers_rank == (challengers_size - 1)){ //mid
+                        MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, challengers_comm, MPI_STATUS_IGNORE);
+                        ch.set_from(tmp_from);
+                        ch.find_new_end(local_partition_size);
+                        //ch.display_from_end();
+
+
+                    } else{ //end
+                        MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, challengers_comm, MPI_STATUS_IGNORE);
+                        //std::cout<<"ch_id: "<<challengers_rank<<" received: "<<tmp_from<<std::endl;
+                        ch.set_from(tmp_from);
+                        ch.find_new_end(local_partition_size);
+                        tmp_end = ch.get_end();
+                        //ch.display_from_end();
+                        MPI_Send(&tmp_end, 1, MPI_INT, i+1, i, challengers_comm);
+                        //std::cout<<"ch_id: "<<challengers_rank<<" new end: "<<tmp_end<<std::endl;
+
+                    }
+
+                }
+
+            }
         }
         break;
     }

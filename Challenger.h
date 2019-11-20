@@ -59,9 +59,7 @@ public:
         }
     }
 
-    void set_from_end(int ffrom, int eend){
-        from = ffrom; end = eend;
-    }
+    void set_from(int new_from){from = new_from;}
 
     void display_from_end(){
        std::string tmp = "ch_id: ";
@@ -73,7 +71,23 @@ public:
        std::cout<<tmp<<std::endl;
     }
 
+    void find_new_end(int size_local_partition){
+        int cnt = size_local_partition;
+        size_t i = from;
+        while(i<guesses.size() and cnt > 0){
+            //std::cout<<"chdi: "<<ch_id<<"i: "<<i<<" cnt: "<<cnt<<std::endl;
+            if(guesses_left[i]){
+                if(cnt == size_local_partition) from = i;
+                cnt--;
+            }
+            i++;
+        }
+        end = i;
+
+    }
+
     int get_size(){return guesses.size();}
+    int get_end(){return end;}
 
 };
 
