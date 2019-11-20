@@ -130,6 +130,15 @@ int main(int argc, char *argv[]) {
     bool finished = false;
     bool noguess = false;
     while(!finished){
+        std::cout<<id<<" START"<<std::endl;
+
+        if(id != 0){
+            ch.display_from_end();
+        }
+
+        if(id == 1){
+            ch.display_guesses_left();
+        }
 
 
         Guess new_guess;
@@ -176,6 +185,7 @@ int main(int argc, char *argv[]) {
         std::vector<int> picked_guess_int(size_secret, 9);
         int pos;
         Evaluation feedback;
+        std::vector<int> tmp_feed = std::vector<int>(2);
         if (id == gm_id) {
             //PICK FIRST GUESS
             size_t i = 0;
@@ -192,10 +202,12 @@ int main(int argc, char *argv[]) {
 
             //EVALUATES PICKED GUESS
             feedback = gm.evaluate(picked_guess_int);
+            //feedback.display();
             if (feedback.is_perfect(size_secret)) {
                 finished = true;
                 break;
             }
+            tmp_feed[0] = feedback.only_color; tmp_feed[1] = feedback.perfect;
         }
         if(id == 0){
             std::string tmp2 = "e] id: ";
@@ -203,6 +215,11 @@ int main(int argc, char *argv[]) {
             for(auto f: picked_guess_int)tmp2+= std::to_string(f);
             std::cout<<tmp2<<std::endl;
         }
+
+        //SEND FEEDBACK BACK TO ALL CHALLENGERS SO THEY CAN FILTER THE FOLLOWING GUESS;
+        MPI_Bcast(&tmp_feed[0], 2, MPI_INT, gm_id, MPI_COMM_WORLD);
+        feedback.only_color = tmp_feed[0];
+        feedback.perfect = tmp_feed[1];
 
 
 
@@ -216,21 +233,27 @@ int main(int argc, char *argv[]) {
         std::cout<<tmp3<<std::endl;
 
 
+        //Guess tmp = Guess(picked_guess_int);
+        //tmp.display_guess();
+        if(id == 1){
+            feedback.display();
+        }
 
 
         if (id != gm_id) {
 
-            //FILTERS THE ACTUAL GUESSES AND RETURNS THE IDX OF THE GUESSES THAT ARENT PART OF THE SOLUTION ANYMORE
 
+            //FILTERS THE ACTUAL GUESSES AND RETURNS THE IDX OF THE GUESSES THAT ARENT PART OF THE SOLUTION ANYMORE
             std::vector<int> to_pop;
             to_pop = ch.filter_guesses(feedback, picked_guess);
             int size_seperate_pop = to_pop.size();
+            //std::cout<<"sizeserperate: "<<size_seperate_pop<<std::endl;
 
             //SHARE INDIVIDUAL TO_POP SIZES
             int local_to_pop[challengers_size];
             MPI_Allgather(&size_seperate_pop, 1, MPI_INT, &local_to_pop, 1, MPI_INT, challengers_comm);
 
-
+            //std::cout<<"ff] id: "<<id<<" local partition size: "<<local_partition_size<<std::endl;
 
             //CALC TOTAL GUESSES TO POP
             int total_to_pop = 0;
@@ -265,6 +288,7 @@ int main(int argc, char *argv[]) {
             }
             MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, challengers_comm);
 
+            std::cout<<"g] id: "<<id<<" local partition size: "<<local_partition_size<<std::endl;
             //DEFINE NEW FROM-END IN A SINGLE FILE
             int tmp_from = 0;
             int tmp_end;
@@ -302,7 +326,8 @@ int main(int argc, char *argv[]) {
 
             }
         }
-        break;
+
+        //break;
     }
 
     if(id != gm_id){

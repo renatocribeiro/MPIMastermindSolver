@@ -51,11 +51,8 @@ public:
     }
     void display_guesses_left(){
         for(size_t i = 0; i<guesses.size();i++){
-            if(guesses_left[i]){
-                //std::cout<<guesses[i]
-                guesses[i].display_guess();
-                std::cout<<"  "<<guesses_left[i]<<std::endl;
-            }
+            guesses[i].display_guess();
+            std::cout<<"  "<<guesses_left[i]<<std::endl;
         }
     }
 
