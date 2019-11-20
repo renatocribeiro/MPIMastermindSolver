@@ -129,6 +129,7 @@ int main(int argc, char *argv[]) {
 
     bool finished = false;
     bool noguess = false;
+    int total_guesses_popped = 0;
     while(!finished){
         std::cout<<id<<" START"<<std::endl;
 
@@ -202,13 +203,20 @@ int main(int argc, char *argv[]) {
 
             //EVALUATES PICKED GUESS
             feedback = gm.evaluate(picked_guess_int);
-            //feedback.display();
+            feedback.display();
             if (feedback.is_perfect(size_secret)) {
                 finished = true;
-                break;
+
             }
             tmp_feed[0] = feedback.only_color; tmp_feed[1] = feedback.perfect;
         }
+
+        MPI_Bcast(&finished, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
+        if(finished){
+            break;
+        }
+
+
         if(id == 0){
             std::string tmp2 = "e] id: ";
             tmp2 += std::to_string(id); tmp2 += " - picked guess by gm: ";
@@ -246,6 +254,7 @@ int main(int argc, char *argv[]) {
             //FILTERS THE ACTUAL GUESSES AND RETURNS THE IDX OF THE GUESSES THAT ARENT PART OF THE SOLUTION ANYMORE
             std::vector<int> to_pop;
             to_pop = ch.filter_guesses(feedback, picked_guess);
+            total_guesses_popped += to_pop.size();
             int size_seperate_pop = to_pop.size();
             //std::cout<<"sizeserperate: "<<size_seperate_pop<<std::endl;
 
@@ -289,9 +298,10 @@ int main(int argc, char *argv[]) {
             MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, challengers_comm);
 
             std::cout<<"g] id: "<<id<<" local partition size: "<<local_partition_size<<std::endl;
-            //DEFINE NEW FROM-END IN A SINGLE FILE
+            //DEFINE NEW FROM-END IN A SINGLE QUEUE
             int tmp_from = 0;
             int tmp_end;
+            std::cout<<"total so far popped: "<<total_guesses_popped<<std::endl;
             for(size_t i = 0; i<challengers_size; i++){
                 if(challengers_rank == i){
                     if(challengers_rank == 0){
@@ -303,14 +313,14 @@ int main(int argc, char *argv[]) {
                         //std::cout<<"ch_id: "<<challengers_rank<<" sent: "<<tmp_end<<std::endl;
                         //ch.display_from_end();
 
-                    } else if(challengers_rank == (challengers_size - 1)){ //mid
+                    } else if(challengers_rank == (challengers_size - 1)){
                         MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, challengers_comm, MPI_STATUS_IGNORE);
                         ch.set_from(tmp_from);
                         ch.find_new_end(local_partition_size);
                         //ch.display_from_end();
 
 
-                    } else{ //end
+                    } else{
                         MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, challengers_comm, MPI_STATUS_IGNORE);
                         //std::cout<<"ch_id: "<<challengers_rank<<" received: "<<tmp_from<<std::endl;
                         ch.set_from(tmp_from);
