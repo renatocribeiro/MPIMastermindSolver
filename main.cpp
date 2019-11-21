@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     }
     MPI_Bcast(&status, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
-    int nbr_guesses_left, partition_size, local_partition_size, from, end;
+    int partition_size, local_partition_size, from, end;
 
     //CREATE POSSIBLE GUESSES AND INIT CHALLENGERS.
 
@@ -60,24 +60,16 @@ int main(int argc, char *argv[]) {
     if (world_rank != gm_rank and status == -1) {
         std::cout << "lets start" << std::endl;
 
-        if(challengers_rank == 0){
-            nbr_guesses_left = (int) pow(nbr_colors, size_secret);
-            std::cout<<nbr_guesses_left<<std::endl;
+        if(challengers_rank == 0)
+            Challenger::generate_partitions(partitions, size_secret, nbr_colors, challengers_size);
 
-            partition_size = ceil(nbr_guesses_left/challengers_size);
-            partitions = std::vector<int>(challengers_size, partition_size);
-
-            int off = nbr_guesses_left - (partition_size * challengers_size);
-            partitions.at(challengers_size -1 ) = partitions.at(challengers_size - 1) + off;
-
-        }
         MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, chall_comm);
 
         from = challengers_rank * local_partition_size;
-        end = local_partition_size * (challengers_rank + 1);
 
-        ch = Challenger(challengers_rank, size_secret, nbr_colors, from, end);
-        //ch.display_from_end();
+        ch = Challenger(challengers_rank, size_secret, nbr_colors);
+        ch.set_from(from);
+        ch.set_end(from + local_partition_size);
 
 
 /*        //JUST TO DEBUG

@@ -4,10 +4,8 @@
 
 #include "Challenger.h"
 
-Challenger::Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color, unsigned int def_from, unsigned int def_end) {
+Challenger::Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color) {
     _chall_id = challenger_id;
-    _from = def_from;
-    _end = def_end;
     _init_guesses(size_secret, nbr_color);
 }
 
@@ -63,6 +61,8 @@ void Challenger::display_guesses_left(){
 }
 
 void Challenger::set_from(int new_from){ _from = new_from;}
+void Challenger::set_end(int new_end){ _end = new_end;}
+
 
 void Challenger::display_from_end(){
     std::string tmp = "ch_id: ";
@@ -90,3 +90,13 @@ void Challenger::find_new_end(int size_local_partition){
 
 int Challenger::get_size(){return _guesses.size();}
 int Challenger::get_end(){return _end;}
+
+void Challenger::generate_partitions(std::vector<int> &partitions, int size_secret, int nbr_colors, int challengers_size) {
+    int nbr_guesses_left = (int) pow(nbr_colors, size_secret);
+    int partition_size = ceil(nbr_guesses_left/challengers_size);
+    partitions = std::vector<int>(challengers_size, partition_size);
+
+    int off = nbr_guesses_left - (partition_size * challengers_size);
+    partitions.at(challengers_size -1 ) = partitions.at(challengers_size - 1) + off;
+
+}
