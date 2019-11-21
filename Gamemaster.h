@@ -14,10 +14,11 @@ class Gamemaster {
 
     private:
         Guess _secret;
-
+        void _generate_random_secret(int size_secret, int nbr_colors);
     public:
-        Gamemaster(const int &size_secret);
         Gamemaster(){}
+        Gamemaster(const int &size_secret, const int &nbr_colors);
+        Gamemaster(Guess secret);
         Evaluation evaluate(std::vector<int> guess);
 };
 

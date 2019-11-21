@@ -4,14 +4,30 @@
 
 #include "Challenger.h"
 
-Challenger::Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color,
-                       const std::vector<Guess> &all_guesses, unsigned int def_from, unsigned int def_end) {
+Challenger::Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color, unsigned int def_from, unsigned int def_end) {
     _chall_id = challenger_id;
-    _guesses = all_guesses;
-    _guesses_left = std::vector<bool>(all_guesses.size(), true);
     _from = def_from;
     _end = def_end;
+    _init_guesses(size_secret, nbr_color);
+}
 
+void Challenger::_init_guesses(int size_secret, int nbr_colors) {
+
+    //this needs to be replaced to create the combinations of possible guesses dynamically
+    std::vector<int> tmp;
+    for (size_t i = 0; i < nbr_colors; i++) {
+        for (size_t j = 0; j < nbr_colors; j++) {
+            for (size_t k = 0; k < nbr_colors; k++) {
+                tmp.clear();
+                tmp.push_back(i);
+                tmp.push_back(j);
+                tmp.push_back(k);
+                Guess tmp_guess = Guess(tmp);
+                _guesses.push_back(tmp_guess);
+            }
+        }
+    }
+    _guesses_left = std::vector<bool>(_guesses.size(), true);
 }
 
 std::vector<int> Challenger::filter_guesses(Evaluation &last_evaluation, Guess &last_guess) {

@@ -5,15 +5,15 @@
 #include "Gamemaster.h"
 #include "Utils.h"
 
-Gamemaster::Gamemaster(const int &size_secret){
-    //TODO:create random secret
-    std::vector<int> guess_vect(size_secret);
+Gamemaster::Gamemaster(const int &size_secret, const int &nbr_colors){
+    this->_generate_random_secret(size_secret, nbr_colors);
+}
+Gamemaster::Gamemaster(Guess secret) {
+    _secret = secret;
+}
 
-    for(size_t i = 0; i<guess_vect.size(); i++){
-        guess_vect[i] = i;
-    }
-    _secret = Guess(guess_vect);
-    //secret.display_guess();
+void Gamemaster::_generate_random_secret(int size_secret, int nbr_colors) {
+    _secret = Guess(std::vector<int>(size_secret, 1));
 }
 
 Evaluation Gamemaster::evaluate(std::vector<int> guess){

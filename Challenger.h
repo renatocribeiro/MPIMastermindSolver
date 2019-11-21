@@ -17,9 +17,9 @@ private:
     std::vector<Guess> _guesses;
     std::vector<bool> _guesses_left;
     unsigned int _chall_id, _from, _end;
+    void _init_guesses(int size_secret, int nbr_colors);
 public:
-    Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color,
-            const std::vector<Guess> &all_guesses, unsigned int def_from, unsigned int def_end);
+    Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color, unsigned int def_from, unsigned int def_end);
     Challenger(){}
 
     std::vector<int> filter_guesses(Evaluation &last_evaluation, Guess &last_guess);
@@ -31,6 +31,7 @@ public:
     void find_new_end(int size_local_partition);
     int get_size();
     int get_end();
+    void generate_possible_guesses();
 
 };
 

@@ -4,93 +4,65 @@
 #include <cmath>
 #include <string>
 
-
 #include "Guess.h"
 #include "Challenger.h"
 #include "Gamemaster.h"
 
 
 int main(int argc, char *argv[]) {
-    int id, nb_instance, len;
-    char processor_name[MPI_MAX_PROCESSOR_NAME];
-    const int gm_id = 0;
-    int buf = -1;
+    int world_rank, world_size, status;
+    MPI_Comm chall_comm;
+    MPI_Group chall_group;
+    MPI_Group world_group;
+
+
+    const int gm_rank = 0;
     const int size_secret = 3;
     const int nbr_colors = 3;
-
 
     Gamemaster gm;
     Challenger ch;
 
-
+    //INIT MPI
     MPI_Init(&argc, &argv);
-    MPI_Comm_rank(MPI_COMM_WORLD, &id);
-    MPI_Comm_size(MPI_COMM_WORLD, &nb_instance);
-    //MPI_Get_processor_name(processor_name, &len);
+    if(MPI_COMM_WORLD != MPI_COMM_NULL){
+        MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+        MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+    }
 
-    MPI_Group world_group;
+
+    //CREATES CHALLENGER GROUP
     MPI_Comm_group(MPI_COMM_WORLD, &world_group);
-    int ranks[nb_instance - 1];
-    for (size_t i = 0; i < nb_instance - 1; ++i) ranks[i] = i + 1;
-    //for(auto f: ranks){std::cout<<f<<std::endl;}
-    MPI_Group challengers_group;
-    MPI_Group_incl(world_group, nb_instance - 1, ranks, &challengers_group);
+    int ranks[world_size - 1];
+    for (size_t i = 0; i < world_size - 1; ++i) ranks[i] = i + 1;
+    MPI_Group_incl(world_group, world_size - 1, ranks, &chall_group);
 
-    MPI_Comm challengers_comm;
-    MPI_Comm_create_group(MPI_COMM_WORLD, challengers_group, 0, &challengers_comm);
+    MPI_Comm_create_group(MPI_COMM_WORLD, chall_group, 0, &chall_comm);
     int challengers_rank, challengers_size;
-    if (MPI_COMM_NULL != challengers_comm) {
-        MPI_Comm_rank(challengers_comm, &challengers_rank);
-        MPI_Comm_size(challengers_comm, &challengers_size);
-    }
-    //std::cout<<"ch rank: "<<challengers_rank<<"id: "<<id<<std::endl;
-/*    int in = 3;
-    if (challengers_rank == 0){
-        in = -1;
+    if (chall_comm != MPI_COMM_NULL) {
+        MPI_Comm_rank(chall_comm, &challengers_rank);
+        MPI_Comm_size(chall_comm, &challengers_size);
     }
 
-    if (id != 0){
-        std::cout<<"id: "<<id<<"ch_r: "<<challengers_rank<<"in: "<<in<<std::endl;
-        MPI_Bcast(&in, 1, MPI_INT, 0, challengers_comm);
-        std::cout<<"id: "<<id<<"ch_r: "<<challengers_rank<<"in: "<<in<<std::endl;
-    }*/
-
-
-
-
-    int msg;
-    if (id == gm_id) {
-        gm = Gamemaster(size_secret);
-        msg = -1;
+    //GAME MASTER BEGINS
+    if (world_rank == gm_rank) {
+        gm = Gamemaster(size_secret, nbr_colors);
+        status = -1;
     }
-    MPI_Bcast(&msg, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&status, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     int nbr_guesses_left, partition_size, local_partition_size, from, end;
+
     //CREATE POSSIBLE GUESSES AND INIT CHALLENGERS.
+
     std::vector<int> partitions;
-    if (id != gm_id and msg == -1) {
+
+    if (world_rank != gm_rank and status == -1) {
         std::cout << "lets start" << std::endl;
 
-        //int all_guesses[nbr_guesses_left][size_secret];
-        std::vector<Guess> all_guesses;
-        //this needs to be replaced to create the combinations of possible guesses dynamically
-        for (size_t i = 0; i < nbr_colors; i++) {
-            for (size_t j = 0; j < nbr_colors; j++) {
-                for (size_t k = 0; k < nbr_colors; k++) {
-                    std::vector<int> tmp;
-                    tmp.push_back(i);
-                    tmp.push_back(j);
-                    tmp.push_back(k);
-                    Guess tmp_guess = Guess(tmp);
-                    all_guesses.push_back(tmp_guess);
-                }
-            }
-        }
-
-
-
         if(challengers_rank == 0){
-            nbr_guesses_left = all_guesses.size();
+            nbr_guesses_left = (int) pow(nbr_colors, size_secret);
+            std::cout<<nbr_guesses_left<<std::endl;
 
             partition_size = ceil(nbr_guesses_left/challengers_size);
             partitions = std::vector<int>(challengers_size, partition_size);
@@ -99,17 +71,17 @@ int main(int argc, char *argv[]) {
             partitions.at(challengers_size -1 ) = partitions.at(challengers_size - 1) + off;
 
         }
-        MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, challengers_comm);
+        MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, chall_comm);
 
         from = challengers_rank * local_partition_size;
         end = local_partition_size * (challengers_rank + 1);
 
-        ch = Challenger(challengers_rank, size_secret, nbr_colors, all_guesses, from, end);
+        ch = Challenger(challengers_rank, size_secret, nbr_colors, from, end);
         //ch.display_from_end();
 
 
 /*        //JUST TO DEBUG
-        if(id == 1){
+        if(world_rank == 1){
             for(size_t i = 0; i<all_guesses.size();i++){
                 std::cout<<i<<":: ";
                 all_guesses[i].display_guess();
@@ -126,67 +98,68 @@ int main(int argc, char *argv[]) {
     bool noguess = false;
     int total_guesses_popped = 0;
     while(!finished){
-        std::cout<<id<<" START"<<std::endl;
-
-        if(id != 0){
+        //std::cout << world_rank << " START" << std::endl;
+        /*
+        if(world_rank != 0){
             ch.display_from_end();
         }
 
-        if(id == 1){
+        if(world_rank == 1){
             ch.display_guesses_left();
         }
-
+        */
 
         Guess new_guess;
         std::vector<int> new_guess_int(size_secret, -2);
 
 
-        if (id != gm_id) {
+        if (world_rank != gm_rank) {
 
             new_guess = ch.get_guess();
             new_guess_int = (std::vector<int>) new_guess;
-
-            std::cout<<"a] id: "<<id<<"picked guess by ch: ";
+            /*
+            std::cout << "a] world_rank: " << world_rank << "picked guess by ch: ";
             new_guess.display_guess();
             std::cout<<std::endl;
-
+            */
         }
+
         if (noguess) break;
-        std::cout<<"b] id: "<<id<<" - break"<<std::endl;
+        //std::cout << "b] world_rank: " << world_rank << " - break" << std::endl;
         //break;
 
 
         //GATHERS ALL PROPOSITIONS IN GAMEMASTER
         int size_all_guesses;
         std::vector<int> gathered_guesses;
-        if (id == gm_id) {
-            size_all_guesses = size_secret * nb_instance;
+        if (world_rank == gm_rank) {
+            size_all_guesses = size_secret * world_size;
             gathered_guesses = std::vector<int>(size_all_guesses);
         }
         MPI_Gather(&new_guess_int[0], size_secret, MPI_INT,
                    &gathered_guesses[0], size_secret, MPI_INT,
                    0, MPI_COMM_WORLD);
-
-        if(id == 0) {
-            std::string tmp = "c] id: ";
-            tmp += std::to_string(id);
+        /*
+        if(world_rank == 0) {
+            std::string tmp = "c] world_rank: ";
+            tmp += std::to_string(world_rank);
             tmp += " - ";
             for (auto f: gathered_guesses)tmp += std::to_string(f);
             std::cout << tmp << std::endl;
         }
 
-        std::cout<<"d] id: "<<id<<" - break"<<std::endl;
-
+        std::cout << "d] world_rank: " << world_rank << " - break" << std::endl;
+        */
 
         std::vector<int> picked_guess_int(size_secret, 9);
         int pos;
         Evaluation feedback;
         std::vector<int> tmp_feed = std::vector<int>(2);
-        if (id == gm_id) {
+        if (world_rank == gm_rank) {
             //PICK FIRST GUESS
             size_t i = 0;
             bool found = false;
-            while (!found and i < nb_instance) {
+            while (!found and i < world_size) {
                 pos = i * size_secret;
                 if (gathered_guesses[pos] != -2) {
                     picked_guess_int = std::vector<int>(gathered_guesses.begin() + pos,
@@ -211,39 +184,42 @@ int main(int argc, char *argv[]) {
             break;
         }
 
-
-        if(id == 0){
-            std::string tmp2 = "e] id: ";
-            tmp2 += std::to_string(id); tmp2 += " - picked guess by gm: ";
+        /*
+        if(world_rank == 0){
+            std::string tmp2 = "e] world_rank: ";
+            tmp2 += std::to_string(world_rank); tmp2 += " - picked guess by gm: ";
             for(auto f: picked_guess_int)tmp2+= std::to_string(f);
             std::cout<<tmp2<<std::endl;
         }
+        */
 
         //SEND FEEDBACK BACK TO ALL CHALLENGERS SO THEY CAN FILTER THE FOLLOWING GUESS;
-        MPI_Bcast(&tmp_feed[0], 2, MPI_INT, gm_id, MPI_COMM_WORLD);
+        MPI_Bcast(&tmp_feed[0], 2, MPI_INT, gm_rank, MPI_COMM_WORLD);
         feedback.only_color = tmp_feed[0];
         feedback.perfect = tmp_feed[1];
 
 
 
         //SEND PICKED GUESS BACK TO ALL THE CHALLENGERS SO THEY CAN FILTER THE FOLLOWING GUESSES
-        MPI_Bcast(&picked_guess_int[0], size_secret, MPI_INT, gm_id, MPI_COMM_WORLD);
+        MPI_Bcast(&picked_guess_int[0], size_secret, MPI_INT, gm_rank, MPI_COMM_WORLD);
         Guess picked_guess = Guess(picked_guess_int);
 
-        std::string tmp3 = "f] id: ";
-        tmp3 += std::to_string(id); tmp3 += " - bcast chosen guess from gm: ";
+        /*
+        std::string tmp3 = "f] world_rank: ";
+        tmp3 += std::to_string(world_rank); tmp3 += " - bcast chosen guess from gm: ";
         for(auto f: picked_guess_int)tmp3+= std::to_string(f);
         std::cout<<tmp3<<std::endl;
-
+        */
 
         //Guess tmp = Guess(picked_guess_int);
         //tmp.display_guess();
-        if(id == 1){
+        /*
+        if(world_rank == 1){
             feedback.display();
         }
+        */
 
-
-        if (id != gm_id) {
+        if (world_rank != gm_rank) {
 
 
             //FILTERS THE ACTUAL GUESSES AND RETURNS THE IDX OF THE GUESSES THAT ARENT PART OF THE SOLUTION ANYMORE
@@ -255,9 +231,9 @@ int main(int argc, char *argv[]) {
 
             //SHARE INDIVIDUAL TO_POP SIZES
             int local_to_pop[challengers_size];
-            MPI_Allgather(&size_seperate_pop, 1, MPI_INT, &local_to_pop, 1, MPI_INT, challengers_comm);
+            MPI_Allgather(&size_seperate_pop, 1, MPI_INT, &local_to_pop, 1, MPI_INT, chall_comm);
 
-            //std::cout<<"ff] id: "<<id<<" local partition size: "<<local_partition_size<<std::endl;
+            //std::cout<<"ff] world_rank: "<<world_rank<<" local partition size: "<<local_partition_size<<std::endl;
 
             //CALC TOTAL GUESSES TO POP
             int total_to_pop = 0;
@@ -274,7 +250,7 @@ int main(int argc, char *argv[]) {
             //int all_to_pop[total_to_pop];
             std::vector<int> all_to_pop(total_to_pop);
             MPI_Allgatherv(&to_pop[0], to_pop.size(), MPI_INT, &all_to_pop[0], local_to_pop, displs, MPI_INT,
-                           challengers_comm);
+                           chall_comm);
 
             //UPDATE THE CHALLENGER LIST OF AVAILABLE GUESS
             ch.update_guesses_left(all_to_pop);
@@ -290,34 +266,34 @@ int main(int argc, char *argv[]) {
                 partitions.at(challengers_size - 1) = partitions.at(challengers_size - 1) + off;
 
             }
-            MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, challengers_comm);
+            MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, chall_comm);
 
-            std::cout<<"g] id: "<<id<<" local partition size: "<<local_partition_size<<std::endl;
+            //std::cout << "g] world_rank: " << world_rank << " local partition size: " << local_partition_size << std::endl;
             //DEFINE NEW FROM-END IN A SINGLE QUEUE
             int tmp_from = 0;
             int tmp_end;
-            std::cout<<"total so far popped: "<<total_guesses_popped<<std::endl;
+            //std::cout<<"total so far popped: "<<total_guesses_popped<<std::endl;
             for(size_t i = 0; i<challengers_size; i++){
                 if(challengers_rank == i){
                     if(challengers_rank == 0){
                         ch.set_from(tmp_from);
                         ch.find_new_end(local_partition_size);
                         tmp_end = ch.get_end();
-                        MPI_Send(&tmp_end, 1, MPI_INT, i+1, i, challengers_comm);
+                        MPI_Send(&tmp_end, 1, MPI_INT, i+1, i, chall_comm);
 
 
                     } else if(challengers_rank == (challengers_size - 1)){
-                        MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, challengers_comm, MPI_STATUS_IGNORE);
+                        MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, chall_comm, MPI_STATUS_IGNORE);
                         ch.set_from(tmp_from);
                         ch.find_new_end(local_partition_size);
 
 
                     } else{
-                        MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, challengers_comm, MPI_STATUS_IGNORE);
+                        MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, chall_comm, MPI_STATUS_IGNORE);
                         ch.set_from(tmp_from);
                         ch.find_new_end(local_partition_size);
                         tmp_end = ch.get_end();
-                        MPI_Send(&tmp_end, 1, MPI_INT, i+1, i, challengers_comm);
+                        MPI_Send(&tmp_end, 1, MPI_INT, i+1, i, chall_comm);
 
                     }
 
@@ -325,13 +301,11 @@ int main(int argc, char *argv[]) {
 
             }
         }
-
-        //break;
     }
 
-    if(id != gm_id){
-        MPI_Group_free(&challengers_group);
-        MPI_Comm_free(&challengers_comm);
+    if(world_rank != gm_rank){
+        MPI_Group_free(&chall_group);
+        MPI_Comm_free(&chall_comm);
     }
 
 
