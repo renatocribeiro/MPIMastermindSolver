@@ -6,17 +6,6 @@
 #include <algorithm>
 
 Evaluation evaluate_guess(Guess secret, Guess guess2){
-
-    /*
-    std::cout<<":::"<<std::endl;
-
-    secret.display_guess();
-    std::cout<<std::endl;
-
-    guess2.display_guess();
-    std::cout<<std::endl;
-    */
-
     Evaluation result;
 
     for(unsigned int i = secret.size(); i-- > 0;){

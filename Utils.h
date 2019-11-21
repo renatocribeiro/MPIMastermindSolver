@@ -7,7 +7,7 @@
 
 #include "Evaluation.h"
 #include "Guess.h"
-Evaluation evaluate_guess(Guess secret, Guess guess2);
 
+Evaluation evaluate_guess(Guess secret, Guess guess2);
 
 #endif //MASTERMIND_HYDRA_UTILS_H

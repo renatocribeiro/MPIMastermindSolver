@@ -5,14 +5,9 @@
 #include <string>
 
 
-//#include "Utils.h"
 #include "Guess.h"
 #include "Challenger.h"
-
 #include "Gamemaster.h"
-//#include "Evaluation.h"
-//#include "utils.cpp"
-
 
 
 int main(int argc, char *argv[]) {
@@ -305,30 +300,24 @@ int main(int argc, char *argv[]) {
             for(size_t i = 0; i<challengers_size; i++){
                 if(challengers_rank == i){
                     if(challengers_rank == 0){
-                        //ch.display_guesses_left();
                         ch.set_from(tmp_from);
                         ch.find_new_end(local_partition_size);
                         tmp_end = ch.get_end();
                         MPI_Send(&tmp_end, 1, MPI_INT, i+1, i, challengers_comm);
-                        //std::cout<<"ch_id: "<<challengers_rank<<" sent: "<<tmp_end<<std::endl;
-                        //ch.display_from_end();
+
 
                     } else if(challengers_rank == (challengers_size - 1)){
                         MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, challengers_comm, MPI_STATUS_IGNORE);
                         ch.set_from(tmp_from);
                         ch.find_new_end(local_partition_size);
-                        //ch.display_from_end();
 
 
                     } else{
                         MPI_Recv(&tmp_from, 1, MPI_INT, i-1, i-1, challengers_comm, MPI_STATUS_IGNORE);
-                        //std::cout<<"ch_id: "<<challengers_rank<<" received: "<<tmp_from<<std::endl;
                         ch.set_from(tmp_from);
                         ch.find_new_end(local_partition_size);
                         tmp_end = ch.get_end();
-                        //ch.display_from_end();
                         MPI_Send(&tmp_end, 1, MPI_INT, i+1, i, challengers_comm);
-                        //std::cout<<"ch_id: "<<challengers_rank<<" new end: "<<tmp_end<<std::endl;
 
                     }
 
