@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
         std::cout << "lets start" << std::endl;
 
         if(challengers_rank == 0)
-            Challenger::generate_partitions(partitions, size_secret, nbr_colors, challengers_size);
+            Challenger::generate_partitions(partitions, challengers_size, (int) pow(nbr_colors, size_secret));
 
         MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, chall_comm);
 
@@ -134,24 +134,21 @@ int main(int argc, char *argv[]) {
         }
 
 
-        //SEND FEEDBACK BACK TO ALL CHALLENGERS SO THEY CAN FILTER THE FOLLOWING GUESS;
+
+        //SEND FEEDBACK AND PICKED GUESS BACK TO CHALLENGERS
         MPI_Bcast(&tmp_feed[0], 2, MPI_INT, gm_rank, MPI_COMM_WORLD);
-        feedback.only_color = tmp_feed[0];
-        feedback.perfect = tmp_feed[1];
-
-
-        //SEND PICKED GUESS BACK TO ALL THE CHALLENGERS SO THEY CAN FILTER THE FOLLOWING GUESSES
         MPI_Bcast(&tmp_gss_prep[0], size_secret, MPI_INT, gm_rank, MPI_COMM_WORLD);
-        Guess picked_guess = Guess(tmp_gss_prep);
-
 
 
         if (world_rank != gm_rank) {
+            tmp_gss = Guess(tmp_gss_prep);
+            feedback.only_color = tmp_feed[0];
+            feedback.perfect = tmp_feed[1];
 
 
             //FILTERS THE ACTUAL GUESSES AND RETURNS THE IDX OF THE GUESSES THAT ARENT PART OF THE SOLUTION ANYMORE
             std::vector<int> to_pop;
-            to_pop = ch.filter_guesses(feedback, picked_guess);
+            to_pop = ch.filter_guesses(feedback, tmp_gss);
             total_guesses_popped += to_pop.size();
             int size_seperate_pop = to_pop.size();
             //std::cout<<"sizeserperate: "<<size_seperate_pop<<std::endl;
@@ -184,15 +181,9 @@ int main(int argc, char *argv[]) {
 
 
             //SCATTER NEW PARTITIONS
-            if (challengers_rank == 0){
-                int nbr_guesses_left = ch.get_size() - total_to_pop;
+            if (challengers_rank == 0)
+                Challenger::generate_partitions(partitions, challengers_size, ch.get_size() - total_to_pop);
 
-                partition_size = ceil(nbr_guesses_left / challengers_size);
-                partitions = std::vector<int>(challengers_size, partition_size);
-                int off = nbr_guesses_left - (partition_size * challengers_size);
-                partitions.at(challengers_size - 1) = partitions.at(challengers_size - 1) + off;
-
-            }
             MPI_Scatter(&partitions[0], 1, MPI_INT, &local_partition_size, 1, MPI_INT, 0, chall_comm);
 
             //std::cout << "g] world_rank: " << world_rank << " local partition size: " << local_partition_size << std::endl;

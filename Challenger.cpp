@@ -91,8 +91,7 @@ void Challenger::find_new_end(int size_local_partition){
 int Challenger::get_size(){return _guesses.size();}
 int Challenger::get_end(){return _end;}
 
-void Challenger::generate_partitions(std::vector<int> &partitions, int size_secret, int nbr_colors, int challengers_size) {
-    int nbr_guesses_left = (int) pow(nbr_colors, size_secret);
+void Challenger::generate_partitions(std::vector<int> &partitions, int challengers_size, int nbr_guesses_left) {
     int partition_size = ceil(nbr_guesses_left/challengers_size);
     partitions = std::vector<int>(challengers_size, partition_size);
 

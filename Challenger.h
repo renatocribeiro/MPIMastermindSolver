@@ -32,7 +32,7 @@ public:
     void find_new_end(int size_local_partition);
     int get_size();
     int get_end();
-    static void generate_partitions(std::vector<int> &partitions, int size_secret, int nbr_colors, int challengers_size);
+    static void generate_partitions(std::vector<int> &partitions, int challengers_size, int nbr_guesss_left);
 
 };
 
