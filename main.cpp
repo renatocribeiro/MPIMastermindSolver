@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 
     //GAME MASTER BEGINS
     if (world_rank == gm_rank) {
-        gm = Gamemaster(size_secret, nbr_colors);
+        gm = Gamemaster(size_secret, nbr_colors, world_size - 1);
         status = -1;
     }
     MPI_Bcast(&status, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -71,17 +71,6 @@ int main(int argc, char *argv[]) {
         ch.set_from(from);
         ch.set_end(from + local_partition_size);
 
-
-/*        //JUST TO DEBUG
-        if(world_rank == 1){
-            for(size_t i = 0; i<all_guesses.size();i++){
-                std::cout<<i<<":: ";
-                all_guesses[i].display_guess();
-                std::cout<<std::endl;
-            }
-        }
-        //JUST TO DEBUG*/
-
     }
 
 
@@ -89,17 +78,13 @@ int main(int argc, char *argv[]) {
     bool finished = false;
     bool noguess = false;
     int total_guesses_popped = 0;
+    int cnt = 0;
     while(!finished){
-        //std::cout << world_rank << " START" << std::endl;
-        /*
-        if(world_rank != 0){
-            ch.display_from_end();
+
+        if (world_rank == gm_rank) {
+            cnt++;
         }
 
-        if(world_rank == 1){
-            ch.display_guesses_left();
-        }
-        */
 
         Guess new_guess;
         std::vector<int> new_guess_int(size_secret, -2);
@@ -109,16 +94,9 @@ int main(int argc, char *argv[]) {
 
             new_guess = ch.get_guess();
             new_guess_int = (std::vector<int>) new_guess;
-            /*
-            std::cout << "a] world_rank: " << world_rank << "picked guess by ch: ";
-            new_guess.display_guess();
-            std::cout<<std::endl;
-            */
+
         }
 
-        if (noguess) break;
-        //std::cout << "b] world_rank: " << world_rank << " - break" << std::endl;
-        //break;
 
 
         //GATHERS ALL PROPOSITIONS IN GAMEMASTER
@@ -131,44 +109,23 @@ int main(int argc, char *argv[]) {
         MPI_Gather(&new_guess_int[0], size_secret, MPI_INT,
                    &gathered_guesses[0], size_secret, MPI_INT,
                    0, MPI_COMM_WORLD);
-        /*
-        if(world_rank == 0) {
-            std::string tmp = "c] world_rank: ";
-            tmp += std::to_string(world_rank);
-            tmp += " - ";
-            for (auto f: gathered_guesses)tmp += std::to_string(f);
-            std::cout << tmp << std::endl;
-        }
 
-        std::cout << "d] world_rank: " << world_rank << " - break" << std::endl;
-        */
 
-        std::vector<int> picked_guess_int(size_secret, 9);
+        std::vector<int> tmp_gss_prep = std::vector<int>(size_secret, -2);
         int pos;
         Evaluation feedback;
+        Guess tmp_gss;
         std::vector<int> tmp_feed = std::vector<int>(2);
         if (world_rank == gm_rank) {
             //PICK FIRST GUESS
-            size_t i = 0;
-            bool found = false;
-            while (!found and i < world_size) {
-                pos = i * size_secret;
-                if (gathered_guesses[pos] != -2) {
-                    picked_guess_int = std::vector<int>(gathered_guesses.begin() + pos,
-                                                        gathered_guesses.begin() + pos + size_secret);
-                    found = true;
-                }
-                i++;
-            }
-
-            //EVALUATES PICKED GUESS
-            feedback = gm.evaluate(picked_guess_int);
-            feedback.display();
-            if (feedback.is_perfect(size_secret)) {
-                finished = true;
-
-            }
+            tmp_gss = gm.pick_guess(gathered_guesses);
+            feedback = gm.evaluate(tmp_gss);
+            finished = gm.is_finished(feedback);
             tmp_feed[0] = feedback.only_color; tmp_feed[1] = feedback.perfect;
+            tmp_gss_prep = (std::vector<int>) tmp_gss;
+
+
+
         }
 
         MPI_Bcast(&finished, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);
@@ -176,14 +133,6 @@ int main(int argc, char *argv[]) {
             break;
         }
 
-        /*
-        if(world_rank == 0){
-            std::string tmp2 = "e] world_rank: ";
-            tmp2 += std::to_string(world_rank); tmp2 += " - picked guess by gm: ";
-            for(auto f: picked_guess_int)tmp2+= std::to_string(f);
-            std::cout<<tmp2<<std::endl;
-        }
-        */
 
         //SEND FEEDBACK BACK TO ALL CHALLENGERS SO THEY CAN FILTER THE FOLLOWING GUESS;
         MPI_Bcast(&tmp_feed[0], 2, MPI_INT, gm_rank, MPI_COMM_WORLD);
@@ -191,25 +140,11 @@ int main(int argc, char *argv[]) {
         feedback.perfect = tmp_feed[1];
 
 
-
         //SEND PICKED GUESS BACK TO ALL THE CHALLENGERS SO THEY CAN FILTER THE FOLLOWING GUESSES
-        MPI_Bcast(&picked_guess_int[0], size_secret, MPI_INT, gm_rank, MPI_COMM_WORLD);
-        Guess picked_guess = Guess(picked_guess_int);
+        MPI_Bcast(&tmp_gss_prep[0], size_secret, MPI_INT, gm_rank, MPI_COMM_WORLD);
+        Guess picked_guess = Guess(tmp_gss_prep);
 
-        /*
-        std::string tmp3 = "f] world_rank: ";
-        tmp3 += std::to_string(world_rank); tmp3 += " - bcast chosen guess from gm: ";
-        for(auto f: picked_guess_int)tmp3+= std::to_string(f);
-        std::cout<<tmp3<<std::endl;
-        */
 
-        //Guess tmp = Guess(picked_guess_int);
-        //tmp.display_guess();
-        /*
-        if(world_rank == 1){
-            feedback.display();
-        }
-        */
 
         if (world_rank != gm_rank) {
 
@@ -300,6 +235,7 @@ int main(int argc, char *argv[]) {
         MPI_Comm_free(&chall_comm);
     }
 
+    if(world_rank == gm_rank) std::cout<<"cnt: "<<cnt<<std::endl;
 
     MPI_Group_free(&world_group);
     MPI_Finalize();

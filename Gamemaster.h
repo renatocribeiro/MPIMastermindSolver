@@ -14,12 +14,15 @@ class Gamemaster {
 
     private:
         Guess _secret;
+        int _chall_size;
         void _generate_random_secret(int size_secret, int nbr_colors);
     public:
         Gamemaster(){}
-        Gamemaster(const int &size_secret, const int &nbr_colors);
+        Gamemaster(const int &size_secret, const int &nbr_colors, int chall_size);
         Gamemaster(Guess secret);
-        Evaluation evaluate(std::vector<int> guess);
+        Evaluation evaluate(Guess guess);
+        Guess pick_guess(std::vector<int> contiguous_guesses);
+        bool is_finished(Evaluation feedback);
 };
 
 
