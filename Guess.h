@@ -17,6 +17,8 @@ private:
 public:
     Guess();
     Guess(const std::vector<int> guess_vect);
+    Guess(const std::vector<std::string> guess_vect);
+
     int size();
     void erase(const size_t &idx);
     void display_guess();

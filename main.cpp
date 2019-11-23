@@ -17,8 +17,8 @@ int main(int argc, char *argv[]) {
 
 
     const int gm_rank = 0;
-    const int size_secret = 3;
-    const int nbr_colors = 3;
+    const int size_secret = 5;
+    const int nbr_colors = 10;
 
     Gamemaster gm;
     Challenger ch;
@@ -52,11 +52,8 @@ int main(int argc, char *argv[]) {
     MPI_Bcast(&status, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
     int partition_size, local_partition_size, from, end;
-
     //CREATE POSSIBLE GUESSES AND INIT CHALLENGERS.
-
     std::vector<int> partitions;
-
     if (world_rank != gm_rank and status == -1) {
         std::cout << "lets start" << std::endl;
 
@@ -119,6 +116,7 @@ int main(int argc, char *argv[]) {
         if (world_rank == gm_rank) {
             //PICK FIRST GUESS
             tmp_gss = gm.pick_guess(gathered_guesses);
+            tmp_gss.display_guess();std::cout<<std::endl;
             feedback = gm.evaluate(tmp_gss);
             finished = gm.is_finished(feedback);
             tmp_feed[0] = feedback.only_color; tmp_feed[1] = feedback.perfect;
@@ -126,6 +124,9 @@ int main(int argc, char *argv[]) {
 
 
 
+        }
+        if(world_rank == 1){
+            //ch.display_guesses_left();
         }
 
         MPI_Bcast(&finished, 1, MPI_CXX_BOOL, 0, MPI_COMM_WORLD);

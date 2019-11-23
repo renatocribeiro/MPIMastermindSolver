@@ -9,22 +9,28 @@ Challenger::Challenger(const int &challenger_id, const int &size_secret, const i
     _init_guesses(size_secret, nbr_color);
 }
 
-void Challenger::_init_guesses(int size_secret, int nbr_colors) {
-
-    //this needs to be replaced to create the combinations of possible guesses dynamically
-    std::vector<int> tmp;
-    for (size_t i = 0; i < nbr_colors; i++) {
-        for (size_t j = 0; j < nbr_colors; j++) {
-            for (size_t k = 0; k < nbr_colors; k++) {
-                tmp.clear();
-                tmp.push_back(i);
-                tmp.push_back(j);
-                tmp.push_back(k);
-                Guess tmp_guess = Guess(tmp);
-                _guesses.push_back(tmp_guess);
-            }
-        }
+std::vector<std::string> Challenger::_to_base(int nbr, int base) {
+    std::vector<std::string> guess = std::vector<std::string>(base, "0");
+    for (int in = nbr, cnt = 0; in > 0; in /= base, cnt++) {
+        int x = in % base;
+        if ((x >= 0) and (x <= 9))
+            guess[cnt] = ('0' + x);
+        else
+            guess[cnt] = ('A' + (x - 10));
     }
+    return guess;
+}
+
+void Challenger::_init_guesses(int size_secret, int nbr_colors) {
+    unsigned tot_guesses = pow(nbr_colors, size_secret);
+
+    std::vector<std::string> guess;
+    for (size_t i = 0; i < tot_guesses; i++) {
+        guess = _to_base(i, size_secret);
+        std::reverse(guess.begin(), guess.end());
+        _guesses.push_back(Guess(guess));
+    }
+
     _guesses_left = std::vector<bool>(_guesses.size(), true);
 }
 

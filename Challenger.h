@@ -18,6 +18,7 @@ private:
     std::vector<bool> _guesses_left;
     unsigned int _chall_id, _from, _end;
     void _init_guesses(int size_secret, int nbr_colors);
+    std::vector<std::string> _to_base(int nbr, int base);
 public:
     Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color);
     Challenger(){}
