@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 
     //GAME MASTER BEGINS
     if (world_rank == gm_rank) {
-        gm = Gamemaster(size_secret, nbr_colors, world_size - 1);
+        //gm = Gamemaster(size_secret, nbr_colors, world_size - 1);
         status = -1;
     }
     MPI_Bcast(&status, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -67,7 +67,6 @@ int main(int argc, char *argv[]) {
     //INIT GUESSES
     if (world_rank != 0 and status == -1){
 
-        ch = Challenger(challengers_rank, size_secret, nbr_colors);
 
         std::vector<int> partitions;
         int local_partition[2];
@@ -76,8 +75,7 @@ int main(int argc, char *argv[]) {
         }
 
         MPI_Scatter(&partitions[0], 2, MPI_INT, &local_partition[0], 2, MPI_INT, 0, chall_comm);
-        //ch.init_guesses(local_partition);
-
+        ch = Challenger(challengers_rank, size_secret, nbr_colors, local_partition);
     }
 
 

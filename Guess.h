@@ -13,19 +13,11 @@
 
 class Guess {
 private:
-    std::vector<int> _guess;
+    int _guess;
 public:
     Guess();
-    Guess(const std::vector<int> guess_vect);
-    Guess(const std::vector<std::string> guess_vect);
-
-    int size();
-    void erase(const size_t &idx);
-    void display_guess();
-    int &operator[](int idx);
-    explicit operator std::set<int>() const;
-    explicit operator std::vector<int>() const;
-
+    Guess(int guess_int);
+    void display();
 };
 
 

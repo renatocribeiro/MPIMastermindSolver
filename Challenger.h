@@ -15,25 +15,12 @@
 class Challenger {
 private:
     std::vector<Guess> _guesses;
-    std::vector<bool> _guesses_left;
-    unsigned int _chall_id, _from, _end;
-    void _init_guesses(int size_secret, int nbr_colors);
-    std::vector<std::string> _to_base(int nbr, int base);
+    int _chall_id;
+    void _init_guesses(const int local_partition[]);
 public:
-    Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color);
+    Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color, const int local_partition[]);
     Challenger(){}
-
-    std::vector<int> filter_guesses(Evaluation &last_evaluation, Guess &last_guess);
-    void update_guesses_left(const std::vector<int> &to_pop);
-    Guess get_guess();
-    void display_guesses_left();
-    void set_from(int new_from);
-    void set_end(int new_end);
-    void display_from_end();
-    void find_new_end(int size_local_partition);
-    int get_size();
-    int get_end();
-    static void generate_partitions(std::vector<int> &partitions, int challengers_size, int nbr_guesss_left);
+    static void generate_partitions(std::vector<int> &partitions, int challengers_size, int total_guesses_left);
 
 };
 
