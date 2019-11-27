@@ -6,7 +6,7 @@
 
 Challenger::Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color) {
     _chall_id = challenger_id;
-    _init_guesses(size_secret, nbr_color);
+    //_init_guesses(size_secret, nbr_color);
 }
 
 std::vector<std::string> Challenger::_to_base(int nbr, int base) {
@@ -99,9 +99,14 @@ int Challenger::get_end(){return _end;}
 
 void Challenger::generate_partitions(std::vector<int> &partitions, int challengers_size, int nbr_guesses_left) {
     int partition_size = ceil(nbr_guesses_left/challengers_size);
-    partitions = std::vector<int>(challengers_size, partition_size);
-
+    std::vector<int> local = std::vector<int>(challengers_size, partition_size);
     int off = nbr_guesses_left - (partition_size * challengers_size);
-    partitions.at(challengers_size -1 ) = partitions.at(challengers_size - 1) + off;
-
+    local.at(challengers_size -1 ) = local.at(challengers_size - 1) + off;
+    partitions = std::vector<int>(challengers_size*2);
+    int previous = 0;
+    for(size_t i = 0; i<challengers_size; i++){
+        partitions[i*2] = previous;
+        previous = partitions[i*2] + local[i];
+        partitions[i*2+1] = previous;
+    }
 }

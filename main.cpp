@@ -23,12 +23,7 @@ int main(int argc, char *argv[]) {
     Gamemaster gm;
     Challenger ch;
 
-    //ARGUMENTS
-    for(size_t i = 1 ; i<argc; i+=2){
-        if(strcasecmp(argv[i], "c") != 0) nbr_colors = std::stoi(argv[i + 1]);
-        else if(strcasecmp(argv[i], "s") != 0) size_secret = std::stoi(argv[i + 1]);
 
-    }
 
 
     //INIT MPI
@@ -51,12 +46,40 @@ int main(int argc, char *argv[]) {
         MPI_Comm_size(chall_comm, &challengers_size);
     }
 
+    //ARGUMENTS
+    for(size_t i = 1 ; i<argc; i+=2){
+        if((std::string) argv[i] == "c")
+            nbr_colors = std::stoi(argv[i+1]);
+        else if((std::string) argv[i] == "s")
+            size_secret = std::stoi(argv[i+1]);
+
+    }
+
+
+
     //GAME MASTER BEGINS
     if (world_rank == gm_rank) {
         gm = Gamemaster(size_secret, nbr_colors, world_size - 1);
         status = -1;
     }
     MPI_Bcast(&status, 1, MPI_INT, 0, MPI_COMM_WORLD);
+
+    //INIT GUESSES
+    if (world_rank != 0 and status == -1){
+
+        ch = Challenger(challengers_rank, size_secret, nbr_colors);
+
+        std::vector<int> partitions;
+        int local_partition[2];
+        if(challengers_rank == 0){
+            Challenger::generate_partitions(partitions, challengers_size, pow(nbr_colors, size_secret));
+        }
+
+        MPI_Scatter(&partitions[0], 2, MPI_INT, &local_partition[0], 2, MPI_INT, 0, chall_comm);
+        //ch.init_guesses(local_partition);
+
+    }
+
 
 
     if(world_rank != gm_rank){
