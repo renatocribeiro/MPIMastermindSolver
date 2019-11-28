@@ -13,11 +13,12 @@
 
 class Guess {
 private:
-    int _guess;
+    int _guess = -1;
 public:
-    Guess();
+    Guess(){};
     Guess(int guess_int);
     void display();
+    bool is_valid();
 };
 
 

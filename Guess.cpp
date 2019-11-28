@@ -5,7 +5,6 @@
 #include "Guess.h"
 #include <iostream>
 
-Guess::Guess(){}
 
 Guess::Guess(int guess_int) {
     _guess = guess_int;
@@ -13,4 +12,8 @@ Guess::Guess(int guess_int) {
 
 void Guess::display() {
     std::cout<<_guess<<std::endl;
+}
+
+bool Guess::is_valid() {
+    return _guess != -1;
 }

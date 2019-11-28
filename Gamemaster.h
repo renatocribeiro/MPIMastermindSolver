@@ -16,6 +16,8 @@ class Gamemaster {
 
     public:
         Gamemaster(){}
+        bool is_finished();
+        Guess pick_guess(std::vector<Guess> guesses);
 };
 
 

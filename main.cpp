@@ -67,7 +67,6 @@ int main(int argc, char *argv[]) {
     //INIT GUESSES
     if (world_rank != 0 and status == -1){
 
-
         std::vector<int> partitions;
         int local_partition[2];
         if(challengers_rank == 0){
@@ -75,8 +74,28 @@ int main(int argc, char *argv[]) {
         }
 
         MPI_Scatter(&partitions[0], 2, MPI_INT, &local_partition[0], 2, MPI_INT, 0, chall_comm);
+        //if(world_rank == 1)
         ch = Challenger(challengers_rank, size_secret, nbr_colors, local_partition);
     }
+
+    bool finished = false;
+    Guess tmp_guess;
+    std::vector<Guess> gathered_guesses;
+    while (!finished){
+        if(world_rank != 0){
+            tmp_guess = ch.get_guess();
+        } else {
+            gathered_guesses = std::vector<Guess>(world_size);
+        }
+        MPI_Gather(&tmp_guess, sizeof(Guess), MPI_BYTE, &gathered_guesses[0], sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
+
+        if (world_rank == 0){
+            tmp_guess = gm.pick_guess(gathered_guesses);
+        }
+
+        break;
+    }
+
 
 
 
