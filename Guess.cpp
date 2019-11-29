@@ -17,3 +17,7 @@ void Guess::display() {
 bool Guess::is_valid() {
     return _guess != -1;
 }
+
+int Guess::get_nbr() {
+    return _guess;
+}

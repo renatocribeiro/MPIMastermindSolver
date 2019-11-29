@@ -16,6 +16,8 @@ class Challenger {
 private:
     std::vector<Guess> _guesses;
     std::vector<bool> _guesses_left;
+    unsigned int _from = -1;
+    unsigned int _end = -1;
     int _chall_id;
     void _init_guesses(const int local_partition[]);
 public:

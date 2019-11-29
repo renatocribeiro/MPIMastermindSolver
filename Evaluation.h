@@ -9,10 +9,11 @@
 struct Evaluation {
     int only_color = 0;
     int perfect = 0;
-    bool operator==(const Evaluation& other);
-    bool operator!=(const Evaluation& other);
     void display();
-    bool is_perfect(int size_secret);
+
+/*    bool operator==(const Evaluation& other);
+    bool operator!=(const Evaluation& other);
+    bool is_perfect(int size_secret);*/
 };
 
 

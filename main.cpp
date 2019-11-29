@@ -46,6 +46,11 @@ int main(int argc, char *argv[]) {
         MPI_Comm_size(chall_comm, &challengers_size);
     }
 
+    if(world_size < 2){
+        return 0;
+    }
+
+
     //ARGUMENTS
     for(size_t i = 1 ; i<argc; i+=2){
         if((std::string) argv[i] == "c")
@@ -59,7 +64,7 @@ int main(int argc, char *argv[]) {
 
     //GAME MASTER BEGINS
     if (world_rank == gm_rank) {
-        //gm = Gamemaster(size_secret, nbr_colors, world_size - 1);
+        gm = Gamemaster(size_secret, nbr_colors);
         status = -1;
     }
     MPI_Bcast(&status, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -80,10 +85,15 @@ int main(int argc, char *argv[]) {
 
     bool finished = false;
     Guess tmp_guess;
+    Evaluation tmp_eval;
     std::vector<Guess> gathered_guesses;
     while (!finished){
+        //tmp_guess = ch.get_guess();
+
         if(world_rank != 0){
+
             tmp_guess = ch.get_guess();
+            //tmp_guess.display();
         } else {
             gathered_guesses = std::vector<Guess>(world_size);
         }
@@ -91,7 +101,11 @@ int main(int argc, char *argv[]) {
 
         if (world_rank == 0){
             tmp_guess = gm.pick_guess(gathered_guesses);
+            tmp_eval = gm.evaluate(tmp_guess);
+            //tmp_guess.display();
         }
+
+
 
         break;
     }

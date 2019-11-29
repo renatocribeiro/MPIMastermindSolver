@@ -19,6 +19,7 @@ public:
     Guess(int guess_int);
     void display();
     bool is_valid();
+    int get_nbr();
 };
 
 

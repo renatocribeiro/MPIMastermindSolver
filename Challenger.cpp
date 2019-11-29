@@ -6,7 +6,10 @@
 
 Challenger::Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color, const int local_partition[]) {
     _chall_id = challenger_id;
-    _init_guesses(local_partition);
+    _from = local_partition[0];
+    _end = local_partition[1];
+    _guesses_left = std::vector<bool>(_end - _from, true);
+    //_init_guesses(local_partition);
 
 }
 
@@ -34,10 +37,10 @@ void Challenger::generate_partitions(std::vector<int> &partitions, int challenge
 
 Guess Challenger::get_guess(){
     Guess res;
-
-    for(size_t i = 0; i<_guesses_left.size(); i++){
-        if(_guesses_left[i]){
-            return _guesses[i];
+    for(size_t i = _from; i<_end; i++){
+        //std::cout<<"chid: "<<_chall_id<<":: "<<i<<std::endl;
+        if (_guesses_left[i - _from]){
+            return Guess(i);
         }
     }
     return res;
