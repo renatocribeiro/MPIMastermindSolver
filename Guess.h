@@ -14,12 +14,15 @@
 class Guess {
 private:
     int _guess = -1;
+    int _size_secret;
 public:
     Guess(){};
-    Guess(int guess_int);
+    Guess(int guess_int, int size_secret);
     void display();
     bool is_valid();
     int get_nbr();
+    std::vector<std::string> conv();
+    std::string to_string();
 };
 
 

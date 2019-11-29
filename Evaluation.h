@@ -11,9 +11,9 @@ struct Evaluation {
     int perfect = 0;
     void display();
 
-/*    bool operator==(const Evaluation& other);
+    bool operator==(const Evaluation& other);
     bool operator!=(const Evaluation& other);
-    bool is_perfect(int size_secret);*/
+    bool is_perfect(int size_secret);
 };
 
 

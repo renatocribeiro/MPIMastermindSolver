@@ -11,7 +11,8 @@
 
 Gamemaster::Gamemaster(int size_secret, int nbr_colors) {
     _size_secret = size_secret;
-    _secret = rand()%((int) pow(nbr_colors, size_secret)-0 + 1) + 0;
+    _secret = Guess(rand()%((int) pow(nbr_colors, size_secret)+ 1), size_secret);
+    std::cout<<"secret: "<<_secret.to_string()<<std::endl;
 }
 
 bool Gamemaster::is_finished() {
@@ -19,8 +20,13 @@ bool Gamemaster::is_finished() {
 }
 
 Guess Gamemaster::pick_guess(std::vector<Guess> guesses) {
-    auto rng = std::default_random_engine {};
-    std::shuffle(guesses.begin() + 1, guesses.end(), rng);
+    /*std::cout<<"gm: ";
+    for(auto f: guesses){
+        std::cout<<f.get_nbr()<<":::";
+    }std::cout<<std::endl;*/
+
+    //auto rng = std::default_random_engine {};
+    //std::shuffle(guesses.begin() + 1, guesses.end(), rng);
     Guess res;
     for(Guess g: guesses){
         if(g.is_valid()){
@@ -30,9 +36,5 @@ Guess Gamemaster::pick_guess(std::vector<Guess> guesses) {
 }
 
 Evaluation Gamemaster::evaluate(Guess guess) {
-    Evaluation res;
-    evaluate_guess(res, _secret, guess, _size_secret);
-
-
-    return res;
+    return evaluate_guess(_secret, guess, _size_secret);
 }

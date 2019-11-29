@@ -6,9 +6,12 @@
 #include <iostream>
 #include <algorithm>
 
-void evaluate_guess(Evaluation &eval, Guess secret, Guess guess, int size_secret){
-    std::vector<std::string> secret_conv = to_base(secret, size_secret);
-    std::vector<std::string> guess_conv = to_base(guess, size_secret);
+Evaluation evaluate_guess(Guess secret, Guess guess, int size_secret){
+    Evaluation res;
+/*    std::vector<std::string> secret_conv = to_base(secret, size_secret);
+    std::vector<std::string> guess_conv = conv(guess, size_secret);*/
+    std::vector<std::string> secret_conv = secret.conv();
+    std::vector<std::string> guess_conv = guess.conv();
 
 
 /*
@@ -17,11 +20,12 @@ void evaluate_guess(Evaluation &eval, Guess secret, Guess guess, int size_secret
 */
 
 
+
     for(unsigned int i = size_secret; i-- > 0;){
         if (secret_conv[i] == guess_conv[i]){
             secret_conv.erase(secret_conv.begin() + i);
             guess_conv.erase(guess_conv.begin() + i);
-            eval.perfect++;
+            res.perfect++;
         }
     }
     //for(auto f: secret_conv){std::cout<<f<<"::";}std::cout<<std::endl;
@@ -32,9 +36,8 @@ void evaluate_guess(Evaluation &eval, Guess secret, Guess guess, int size_secret
     std::set<std::string> secret_inter_guess;
     std::set_intersection(secret_set.begin(), secret_set.end(), guess_set.begin(), guess_set.end(), std::inserter(secret_inter_guess,secret_inter_guess.begin()));
 
-    eval.only_color = secret_inter_guess.size();
-
-
+    res.only_color = secret_inter_guess.size();
+    return res;
 }
 
 std::vector<std::string> to_base(Guess guess, int base){

@@ -8,7 +8,7 @@
 #include "Evaluation.h"
 #include "Guess.h"
 
-void evaluate_guess(Evaluation &eval, Guess secret, Guess guess, int size_secret);
+Evaluation evaluate_guess(Guess secret, Guess guess, int size_secret);
 std::vector<std::string> to_base(Guess guess, int base);
 
 #endif //MASTERMIND_HYDRA_UTILS_H
