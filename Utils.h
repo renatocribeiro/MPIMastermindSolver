@@ -5,10 +5,6 @@
 #ifndef MASTERMIND_HYDRA_UTILS_H
 #define MASTERMIND_HYDRA_UTILS_H
 
-#include "Evaluation.h"
-#include "Guess.h"
 
-Evaluation evaluate_guess(Guess secret, Guess guess, int size_secret);
-std::vector<std::string> to_base(Guess guess, int base);
 
 #endif //MASTERMIND_HYDRA_UTILS_H

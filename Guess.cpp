@@ -4,6 +4,7 @@
 
 #include "Guess.h"
 #include <iostream>
+#include <algorithm>
 
 
 Guess::Guess(int guess_int, int size_secret) {
@@ -40,4 +41,41 @@ std::vector<std::string> Guess::conv() {
 std::string Guess::to_string() {
     std::vector<std::string> converted = conv();
     return std::accumulate(converted.begin(), converted.end(), std::string(""));
+}
+
+Evaluation Guess::evaluate(Guess guess, int size_secret) {
+
+    Evaluation res;
+/*    std::vector<std::string> secret_conv = to_base(secret, size_secret);
+    std::vector<std::string> guess_conv = conv(guess, size_secret);*/
+    std::vector<std::string> secret_conv = this->conv();
+    std::vector<std::string> guess_conv = guess.conv();
+
+
+/*
+    for(auto f: secret_conv){std::cout<<f<<"::";}std::cout<<std::endl;
+    for(auto f: guess_conv){std::cout<<f<<"::";}std::cout<<std::endl;
+*/
+
+
+
+    for(unsigned int i = size_secret; i-- > 0;){
+        if (secret_conv[i] == guess_conv[i]){
+            secret_conv.erase(secret_conv.begin() + i);
+            guess_conv.erase(guess_conv.begin() + i);
+            res.perfect++;
+        }
+    }
+    //for(auto f: secret_conv){std::cout<<f<<"::";}std::cout<<std::endl;
+
+
+    std::set<std::string> secret_set(secret_conv.begin(), secret_conv.end());
+    std::set<std::string> guess_set(guess_conv.begin(), guess_conv.end());
+    std::set<std::string> secret_inter_guess;
+    std::set_intersection(secret_set.begin(), secret_set.end(), guess_set.begin(), guess_set.end(), std::inserter(secret_inter_guess,secret_inter_guess.begin()));
+
+    res.only_color = secret_inter_guess.size();
+    return res;
+
+
 }

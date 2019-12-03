@@ -50,12 +50,17 @@ Guess Challenger::get_guess(){
     return res;
 }
 
-void Challenger::filter_guesses(class Guess last_guess, struct Evaluation last_evaluation) {
+void Challenger::filter_guesses(Guess last_guess, Evaluation last_evaluation) {
     for(size_t i = 0; i<_guesses_left.size(); i++){
         if(_guesses_left[i] == true){
-            if(evaluate_guess(last_guess, Guess(i + _from, _size_secret), _size_secret) != last_evaluation){
+
+            if(last_guess.evaluate(Guess(i + _from, _size_secret), _size_secret) != last_evaluation){
                 _guesses_left[i] = false;
             }
+
+/*            if(evaluate_guess(last_guess, Guess(i + _from, _size_secret), _size_secret) != last_evaluation){
+                _guesses_left[i] = false;
+            }*/
         }
         //std::cout<<Guess(i+_from, _size_secret).to_string()<<":::"<<_guesses_left[i]<<std::endl;
     }

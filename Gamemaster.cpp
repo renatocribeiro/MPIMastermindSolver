@@ -36,5 +36,6 @@ Guess Gamemaster::pick_guess(std::vector<Guess> guesses) {
 }
 
 Evaluation Gamemaster::evaluate(Guess guess) {
-    return evaluate_guess(_secret, guess, _size_secret);
+    return _secret.evaluate(guess, _size_secret);
+    //return evaluate_guess(_secret, guess, _size_secret);
 }

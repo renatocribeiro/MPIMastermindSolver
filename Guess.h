@@ -9,6 +9,7 @@
 #include <random>
 #include <iterator>
 #include <set>
+#include "Evaluation.h"
 
 
 class Guess {
@@ -23,6 +24,7 @@ public:
     int get_nbr();
     std::vector<std::string> conv();
     std::string to_string();
+    Evaluation evaluate(Guess guess, int size_secret);
 };
 
 
