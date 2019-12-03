@@ -27,7 +27,9 @@ public:
     type_guess get_nbr();
     std::vector<std::string> conv();
     std::string to_string();
-    Evaluation evaluate(Guess guess, int size_secret);
+    Evaluation evaluate(Guess &guess, int size_secret);
+    Guess& operator= (Guess&&);
+    Guess (const Guess&);
 };
 
 

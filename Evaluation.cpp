@@ -21,3 +21,12 @@ bool Evaluation::operator!=(const Evaluation& other) {
 bool Evaluation::is_perfect(int size_secret) {
     return this->perfect==size_secret;
 }
+
+Evaluation& Evaluation::operator= (Evaluation&& v) {
+    if (this != &v) {
+        only_color = v.only_color; perfect = v.perfect;
+    }
+    return *this;
+}
+
+Evaluation::Evaluation(const Evaluation& v): only_color(v.only_color), perfect(v.perfect){}

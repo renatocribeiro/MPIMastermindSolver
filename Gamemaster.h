@@ -15,12 +15,13 @@ class Gamemaster {
     private:
     Guess _secret;
     int _size_secret;
+    int _nbr_challengers;
 
     public:
         Gamemaster(){}
-        Gamemaster(int size_secret, int nbr_colors);
+        Gamemaster(int size_secret, int nbr_colors, int nbr_challengers);
         Guess pick_guess(std::vector<Guess> guesses);
-        Evaluation evaluate(Guess guess);
+        Evaluation evaluate(Guess &guess);
         Guess get_secret();
 };
 

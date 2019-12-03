@@ -31,22 +31,22 @@ void Challenger::generate_partitions(std::vector<type_guess > &partitions, int c
 }
 
 Guess Challenger::get_guess(){
-    Guess res = Guess();
+    Guess res;
     for(size_t i = _from; i<_end; i++){
         if (_guesses_left[i - _from] == true){
-
-            return Guess(i, _size_secret, _nbr_colors);
+            res = Guess(i, _size_secret, _nbr_colors);
+            break;
         }
     }
 
     return res;
 }
 
-void Challenger::filter_guesses(Guess last_guess, Evaluation last_evaluation) {
+void Challenger::filter_guesses(Guess &last_guess, Evaluation last_evaluation) {
     for(size_t i = 0; i<_guesses_left.size(); i++){
         if(_guesses_left[i] == true){
-
-            if(last_guess.evaluate(Guess(i + _from, _size_secret, _nbr_colors), _size_secret) != last_evaluation){
+            Guess tmp_guess = Guess(i + _from, _size_secret, _nbr_colors);
+            if(last_guess.evaluate(tmp_guess, _size_secret) != last_evaluation){
                 _guesses_left[i] = false;
             }
 

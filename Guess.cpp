@@ -54,7 +54,7 @@ std::string Guess::to_string() {
 
 }
 
-Evaluation Guess::evaluate(Guess guess, int size_secret) {
+Evaluation Guess::evaluate(Guess &guess, int size_secret) {
     Evaluation res;
     std::vector<std::string> secret_conv = this->conv();
     std::vector<std::string> guess_conv = guess.conv();
@@ -76,3 +76,13 @@ Evaluation Guess::evaluate(Guess guess, int size_secret) {
 
 
 }
+
+Guess& Guess::operator= (Guess&& v) {
+    if (this != &v) {
+        _guess = v._guess; _empty = v._empty;
+        _nbr_colors = v._nbr_colors; _size_secret = v._size_secret;
+    }
+    return *this;
+}
+
+Guess::Guess(const Guess& v): _guess(v._guess), _empty(v._empty), _nbr_colors(v._nbr_colors), _size_secret(v._size_secret){}

@@ -26,7 +26,7 @@ public:
     Challenger(){}
     static void generate_partitions(std::vector<type_guess> &partitions, int challengers_size, int total_guesses_left);
     Guess get_guess();
-    void filter_guesses(Guess last_guess, Evaluation last_evaluation);
+    void filter_guesses(Guess &last_guess, Evaluation last_evaluation);
     void display();
 
 };
