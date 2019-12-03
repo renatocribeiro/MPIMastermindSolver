@@ -21,7 +21,6 @@ private:
     unsigned int _from = -1;
     unsigned int _end = -1;
     int _chall_id;
-    //void _init_guesses(const int local_partition[]);
 public:
     Challenger(const int &challenger_id, const int &size_secret, const int &nbr_color, const type_guess local_partition[]);
     Challenger(){}

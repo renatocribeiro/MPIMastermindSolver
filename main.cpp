@@ -23,9 +23,6 @@ int main(int argc, char *argv[]) {
     Gamemaster gm;
     Challenger ch;
 
-
-
-
     //INIT MPI
     MPI_Init(&argc, &argv);
     if(MPI_COMM_WORLD != MPI_COMM_NULL){
@@ -60,17 +57,12 @@ int main(int argc, char *argv[]) {
 
     }
 
-
-    //std::cout<<"___"<<nbr_colors<<":"<<size_secret<<std::endl;
     //GAME MASTER BEGINS
     if (world_rank == gm_rank) {
         gm = Gamemaster(size_secret, nbr_colors);
         status = -1;
     }
     MPI_Bcast(&status, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    //std::cout<<status<<std::endl;
-    //std::cout<<nbr_colors<<":"<<size_secret<<std::endl;
-    //return 0;
 
     //INIT GUESSES
     if (world_rank != 0 and status == -1){
@@ -85,12 +77,9 @@ int main(int argc, char *argv[]) {
         MPI_Scatter(&partitions[0], 2, MPI_UNSIGNED_LONG_LONG, &local_partition[0], 2, MPI_UNSIGNED_LONG_LONG, 0, chall_comm);
 
         std::cout<<local_partition[0]<<"::"<<local_partition[1]<<std::endl;
-        //if(world_rank == 1)
         ch = Challenger(challengers_rank, size_secret, nbr_colors, local_partition);
-        //ch.display();
     }
-    //ch.display();
-    //return 0;
+
 
     bool finished = false;
     Guess tmp_guess;
@@ -98,19 +87,13 @@ int main(int argc, char *argv[]) {
     std::vector<Guess> gathered_guesses;
     int cnt = 0;
     while (!finished){
-        //tmp_guess = ch.get_guess();
-        //std::cout<<"_______"<<std::endl;
 
         if(world_rank != 0){
-            //ch.display();
             tmp_guess = ch.get_guess();
-            //std::cout<<"id: "<<world_rank<<":::"<<tmp_guess.get_nbr()<<std::endl;
-            //tmp_guess.display();
         } else {
             tmp_guess = Guess();
             gathered_guesses = std::vector<Guess>(world_size);
         }
-        std::cout<<"guess nbr: "<<tmp_guess.get_nbr()<<std::endl;
 
         MPI_Gather(&tmp_guess, sizeof(Guess), MPI_BYTE, &gathered_guesses[0], sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
 
@@ -118,13 +101,11 @@ int main(int argc, char *argv[]) {
 
         if (world_rank == 0){
             tmp_guess = gm.pick_guess(gathered_guesses);
-            std::cout<<"picked by gm: "<<tmp_guess.to_string()<<std::endl;
-            std::cout<<"yyoo: "<<tmp_guess.get_nbr()<<std::endl;
             tmp_eval = gm.evaluate(tmp_guess);
             tmp_eval.display();
         }
 
-        return 0;
+        //return 0;
 
         MPI_Bcast(&tmp_guess, sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
         MPI_Bcast(&tmp_eval, sizeof(Evaluation), MPI_BYTE, 0, MPI_COMM_WORLD);
@@ -134,14 +115,9 @@ int main(int argc, char *argv[]) {
         if (!finished) {
             if (world_rank != 0) {
                 ch.filter_guesses(tmp_guess, tmp_eval);
-                //ch.display();
-
             }
         }
-        //break;
     }
-
-
 
 
     if(world_rank != gm_rank){

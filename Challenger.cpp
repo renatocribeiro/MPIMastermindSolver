@@ -11,22 +11,12 @@ Challenger::Challenger(const int &challenger_id, const int &size_secret, const i
     _from = local_partition[0];
     _end = local_partition[1];
     _guesses_left = std::vector<bool>(_end - _from, true);
-    //_init_guesses(local_partition);
 
 }
 
-/*void Challenger::_init_guesses(const int local_partition[]) {
-    for(size_t i = local_partition[0]; i<local_partition[1]; i++){
-        _guesses.push_back(Guess(i));
-    }
-    _guesses_left = std::vector<bool>(_guesses.size(), true);
-    //for(auto f: _guesses){f.display();}
-}*/
 
 void Challenger::generate_partitions(std::vector<type_guess > &partitions, int challengers_size, int total_guesses_left) {
-    std::cout<<"oyo"<<total_guesses_left<<std::endl;
     type_guess partition_size = ceil(total_guesses_left / challengers_size);
-    std::cout<<partition_size<<std::endl;
 
     std::vector<type_guess> local = std::vector<type_guess>(challengers_size, partition_size);
     type_guess off = total_guesses_left - (partition_size * challengers_size);
@@ -43,10 +33,8 @@ void Challenger::generate_partitions(std::vector<type_guess > &partitions, int c
 Guess Challenger::get_guess(){
     Guess res = Guess();
     for(size_t i = _from; i<_end; i++){
-        //std::cout<<i<<"__"<<i-_from<<"__"<<_guesses_left[i-_from]<<std::endl;
         if (_guesses_left[i - _from] == true){
-            //std::cout<<"_____"<<i<<"--"<<i-_from<<std::endl;
-            //std::cout<<i<<std::endl;
+
             return Guess(i, _size_secret, _nbr_colors);
         }
     }
@@ -62,11 +50,7 @@ void Challenger::filter_guesses(Guess last_guess, Evaluation last_evaluation) {
                 _guesses_left[i] = false;
             }
 
-/*            if(evaluate_guess(last_guess, Guess(i + _from, _size_secret), _size_secret) != last_evaluation){
-                _guesses_left[i] = false;
-            }*/
         }
-        //std::cout<<Guess(i+_from, _size_secret).to_string()<<":::"<<_guesses_left[i]<<std::endl;
     }
 
 }
