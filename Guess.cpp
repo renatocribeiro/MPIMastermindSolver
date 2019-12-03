@@ -22,7 +22,7 @@ bool Guess::is_valid() {
     return !_empty;
 }
 
-int Guess::get_nbr() {
+type_guess Guess::get_nbr() {
     return _guess;
 }
 
@@ -30,6 +30,7 @@ std::vector<std::string> Guess::conv() {
 
         type_guess nbr = get_nbr();
         std::vector<std::string> res = std::vector<std::string>(_nbr_colors, "0");
+        //std::cout<<nbr<<"__"<<res.size()<<std::endl;
         for (type_guess in = nbr, cnt = 0; in > 0; in /= _nbr_colors, cnt++) {
             int x = in % _nbr_colors;
             if ((x >= 0) and (x <= 9))
@@ -37,13 +38,20 @@ std::vector<std::string> Guess::conv() {
             else
                 res[cnt] = ('A' + (x - 10));
         }
-        return res;
+    //std::cout<<nbr<<"______"<<res.size()<<std::endl;
+
+    return res;
 
 }
 
 std::string Guess::to_string() {
-    std::vector<std::string> converted = conv();
-    return std::accumulate(converted.begin(), converted.end(), std::string(""));
+    if (is_valid()){
+        std::vector<std::string> converted = conv();
+        return std::accumulate(converted.begin(), converted.end(), std::string(""));
+    }else{
+        return "-1";
+    }
+
 }
 
 Evaluation Guess::evaluate(Guess guess, int size_secret) {

@@ -24,7 +24,7 @@ public:
     Guess(type_guess guess_int, int size_secret, int nbr_colors);
     void display();
     bool is_valid();
-    int get_nbr();
+    type_guess get_nbr();
     std::vector<std::string> conv();
     std::string to_string();
     Evaluation evaluate(Guess guess, int size_secret);

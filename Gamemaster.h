@@ -21,6 +21,7 @@ class Gamemaster {
         Gamemaster(int size_secret, int nbr_colors);
         Guess pick_guess(std::vector<Guess> guesses);
         Evaluation evaluate(Guess guess);
+        Guess get_secret();
 };
 
 

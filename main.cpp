@@ -60,6 +60,7 @@ int main(int argc, char *argv[]) {
     //GAME MASTER BEGINS
     if (world_rank == gm_rank) {
         gm = Gamemaster(size_secret, nbr_colors);
+        std::cout<<"Secret: "<<gm.get_secret().to_string()<<std::endl;
         status = -1;
     }
     MPI_Bcast(&status, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -76,7 +77,6 @@ int main(int argc, char *argv[]) {
 
         MPI_Scatter(&partitions[0], 2, MPI_UNSIGNED_LONG_LONG, &local_partition[0], 2, MPI_UNSIGNED_LONG_LONG, 0, chall_comm);
 
-        std::cout<<local_partition[0]<<"::"<<local_partition[1]<<std::endl;
         ch = Challenger(challengers_rank, size_secret, nbr_colors, local_partition);
     }
 
@@ -90,6 +90,7 @@ int main(int argc, char *argv[]) {
 
         if(world_rank != 0){
             tmp_guess = ch.get_guess();
+            //std::cout<<tmp_guess.get_nbr()<<"__"<<tmp_guess.to_string()<<std::endl;
         } else {
             tmp_guess = Guess();
             gathered_guesses = std::vector<Guess>(world_size);
@@ -101,8 +102,9 @@ int main(int argc, char *argv[]) {
 
         if (world_rank == 0){
             tmp_guess = gm.pick_guess(gathered_guesses);
+            std::cout<<"gm picked: "<<tmp_guess.get_nbr()<<"__"<<tmp_guess.to_string()<<std::endl;
             tmp_eval = gm.evaluate(tmp_guess);
-            tmp_eval.display();
+            //tmp_eval.display();
         }
 
         //return 0;
