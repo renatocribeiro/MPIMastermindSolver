@@ -10,15 +10,18 @@
 #include <iterator>
 #include <set>
 #include "Evaluation.h"
+#include "Utils.h"
 
 
 class Guess {
 private:
-    int _guess = -1;
+    type_guess _guess;
+    bool _empty = true;
+    int _nbr_colors;
     int _size_secret;
 public:
     Guess(){};
-    Guess(int guess_int, int size_secret);
+    Guess(type_guess guess_int, int size_secret, int nbr_colors);
     void display();
     bool is_valid();
     int get_nbr();
