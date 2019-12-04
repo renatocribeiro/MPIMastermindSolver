@@ -87,9 +87,7 @@ int main(int argc, char *argv[]) {
     bool finished = false;
     Guess tmp_guess;
     Evaluation tmp_eval;
-    int cnt=0;
     while (!finished){
-        cnt++;
         if(world_rank != 0){
             tmp_guess = ch.get_guess();
         }
