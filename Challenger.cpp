@@ -43,10 +43,10 @@ Guess Challenger::get_guess(){
     //std::cout<<"chid: "<<_chall_id<<" from: "<<_from<<"end: "<<_end<<std::endl;
     Guess res;
     if(_prev_guesses.size() < 1){
-        std::cout<<"chid: "<<_chall_id<<" prev empty, return: "<<_from<<std::endl;
+        //std::cout<<"chid: "<<_chall_id<<" prev empty, return: "<<_from<<std::endl;
         return Guess(_from, _size_secret, _nbr_colors);
     }else{
-        std::cout<<"chid: "<<_chall_id<<" not empty checking: from"<<_from<<", to: "<<_end<<std::endl;
+        //std::cout<<"chid: "<<_chall_id<<" not empty checking: from"<<_from<<", to: "<<_end<<std::endl;
         for(type_guess i = _from; i<_end; i++) {
             Guess tmp_guess = Guess(i, _size_secret, _nbr_colors);
             bool pl = _is_plausible(tmp_guess);

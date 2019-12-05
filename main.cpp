@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
     while (!finished){
         if(world_rank != 0){
             tmp_guess = ch.get_guess();
-            //std::cout<<"id: "<<world_rank<<",  "<<tmp_guess.get_nbr()<<", "<<tmp_guess.to_string()<<std::endl;
+            std::cout<<"id: "<<world_rank<<",  "<<tmp_guess.get_nbr()<<", "<<tmp_guess.to_string()<<std::endl;
         }
         MPI_Gather(&tmp_guess, sizeof(Guess), MPI_BYTE, &gathered_guesses[0], sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
 
