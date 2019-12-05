@@ -29,7 +29,7 @@ type_guess Guess::get_nbr() {
 std::vector<std::string> Guess::conv() {
 
         type_guess nbr = get_nbr();
-        std::vector<std::string> res = std::vector<std::string>(_nbr_colors, "0");
+        std::vector<std::string> res = std::vector<std::string>(_size_secret, "0");
         //std::cout<<nbr<<"__"<<res.size()<<std::endl;
         for (type_guess in = nbr, cnt = 0; in > 0; in /= _nbr_colors, cnt++) {
             int x = in % _nbr_colors;
