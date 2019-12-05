@@ -53,11 +53,11 @@ Guess Challenger::get_guess(){
             //std::cout<<tmp_guess.get_nbr()<<", "<<tmp_guess.to_string()<<"plausible: "<<pl<<std::endl;
             if(pl){
                 _from = i;
-                res = std::move(tmp_guess);
-                break;
+                return tmp_guess;
             }
         }
     }
+    _from = _end;
     std::cout<<"chid: "<<_chall_id<<", nbr: "<<res.to_string()<<std::endl;
     return res;
 }
