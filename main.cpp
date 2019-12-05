@@ -73,10 +73,10 @@ int main(int argc, char *argv[]) {
 
         std::vector<type_guess> partitions;
         type_guess local_partition[2];
+        auto tot = pow(nbr_colors, size_secret);
         if(challengers_rank == 0){
-            Challenger::generate_partitions(partitions, challengers_size, pow(nbr_colors, size_secret));
+            Challenger::generate_partitions(partitions, challengers_size, tot);
         }
-
 
         MPI_Scatter(&partitions[0], 2, MPI_UNSIGNED_LONG_LONG, &local_partition[0], 2, MPI_UNSIGNED_LONG_LONG, 0, chall_comm);
 
@@ -90,6 +90,7 @@ int main(int argc, char *argv[]) {
     while (!finished){
         if(world_rank != 0){
             tmp_guess = ch.get_guess();
+            //std::cout<<"id: "<<world_rank<<",  "<<tmp_guess.get_nbr()<<", "<<tmp_guess.to_string()<<std::endl;
         }
         MPI_Gather(&tmp_guess, sizeof(Guess), MPI_BYTE, &gathered_guesses[0], sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
 
@@ -98,6 +99,7 @@ int main(int argc, char *argv[]) {
             tmp_guess = gm.pick_guess(gathered_guesses);
             std::cout<<"gm picked: "<<tmp_guess.get_nbr()<<"__"<<tmp_guess.to_string()<<std::endl;
             tmp_eval = gm.evaluate(tmp_guess);
+            tmp_eval.display();
         }
 
 
@@ -107,7 +109,7 @@ int main(int argc, char *argv[]) {
         if (!finished) {
             MPI_Bcast(&tmp_guess, sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
             if (world_rank != 0) {
-                ch.filter_guesses(tmp_guess, tmp_eval);
+                ch.update(tmp_guess, tmp_eval);
             }
         }
 

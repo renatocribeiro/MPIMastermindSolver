@@ -10,12 +10,11 @@ Challenger::Challenger(const int &challenger_id, const int &size_secret, const i
     _nbr_colors = nbr_color;
     _from = local_partition[0];
     _end = local_partition[1];
-    _guesses_left = std::vector<bool>(_end - _from, true);
 
 }
 
 
-void Challenger::generate_partitions(std::vector<type_guess > &partitions, int challengers_size, int total_guesses_left) {
+void Challenger::generate_partitions(std::vector<type_guess > &partitions, int challengers_size, type_guess total_guesses_left) {
     type_guess partition_size = ceil(total_guesses_left / challengers_size);
 
     std::vector<type_guess> local = std::vector<type_guess>(challengers_size, partition_size);
@@ -30,33 +29,47 @@ void Challenger::generate_partitions(std::vector<type_guess > &partitions, int c
     }
 }
 
-Guess Challenger::get_guess(){
-    Guess res;
-    for(size_t i = _from; i<_end; i++){
-        if (_guesses_left[i - _from] == true){
-            res = Guess(i, _size_secret, _nbr_colors);
-            break;
+bool Challenger::_is_plausible(Guess &guess) {
+    //std::cout<<"chid"<<_chall_id<<" nbr of prev guesses: "<<_prev_guesses.size()<<std::endl;
+    for(size_t i = 0; i<_prev_guesses.size(); i++){
+        if(_prev_guesses[i].evaluate(guess, _size_secret) != _prev_evals[i]){
+            return false;
         }
     }
+    return true;
+}
 
+Guess Challenger::get_guess(){
+    //std::cout<<"chid: "<<_chall_id<<" from: "<<_from<<"end: "<<_end<<std::endl;
+    Guess res;
+    if(_prev_guesses.size() < 1){
+        std::cout<<"chid: "<<_chall_id<<" prev empty, return: "<<_from<<std::endl;
+        return Guess(_from, _size_secret, _nbr_colors);
+    }else{
+        std::cout<<"chid: "<<_chall_id<<" not empty checking: from"<<_from<<", to: "<<_end<<std::endl;
+        for(type_guess i = _from; i<_end; i++) {
+            Guess tmp_guess = Guess(i, _size_secret, _nbr_colors);
+            bool pl = _is_plausible(tmp_guess);
+            //std::cout<<tmp_guess.get_nbr()<<", "<<tmp_guess.to_string()<<"plausible: "<<pl<<std::endl;
+            if(pl){
+                _from = i;
+                res = std::move(tmp_guess);
+                break;
+            }
+        }
+    }
+    std::cout<<"chid: "<<_chall_id<<", nbr: "<<res.to_string()<<std::endl;
     return res;
 }
 
-void Challenger::filter_guesses(Guess &last_guess, Evaluation last_evaluation) {
-    for(size_t i = 0; i<_guesses_left.size(); i++){
-        if(_guesses_left[i] == true){
-            Guess tmp_guess = Guess(i + _from, _size_secret, _nbr_colors);
-            if(last_guess.evaluate(tmp_guess, _size_secret) != last_evaluation){
-                _guesses_left[i] = false;
-            }
-
-        }
-    }
+void Challenger::update(Guess &last_guess, Evaluation last_evaluation) {
+    _prev_guesses.push_back(last_guess);
+    _prev_evals.push_back(last_evaluation);
 
 }
 
 void Challenger::display() {
     for(size_t i = 0; i<_guesses_left.size(); i++){
-        std::cout<<i+_from<<"::"<<Guess(i+_from, _size_secret, _nbr_colors).to_string()<<"::"<<_guesses_left[i]<<std::endl;
+        std::cout<<i+_from<<"::"<<Guess(i+_from, _size_secret, _nbr_colors).to_string()<<std::endl;
     }
 }
