@@ -86,3 +86,7 @@ void Challenger::display() {
     }
 
 }
+
+void Challenger::get_ranges(std::vector<Range> & ranges) {
+    ranges = std::move(_ranges);
+}

@@ -11,6 +11,7 @@
 struct Range {
     type_guess from;
     type_guess end;
+    void display();
 
 };
 

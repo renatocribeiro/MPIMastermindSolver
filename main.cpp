@@ -118,12 +118,55 @@ int main(int argc, char *argv[]) {
             MPI_Bcast(&tmp_guess, sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
             if (world_rank != 0) {
                 ch.update(tmp_guess, tmp_eval);
+
+                std::vector<Range> local_ranges;
+                ch.get_ranges(local_ranges);
+
+                unsigned int local_size = local_ranges.size();
+                //unsigned int recv_counts[challengers_size];
+                int recv_counts[challengers_size];
+                int displs[challengers_size];
+                MPI_Gather(&local_size, 1, MPI_INT, &recv_counts[0], 1, MPI_INT, 0, chall_comm);
+                int total_size = 0;
+                if(challengers_rank == 0){
+
+                    //recv_counts[0] = 3; recv_counts[1] = 2; recv_counts[2] = 1;
+                    for(size_t i = 0; i<challengers_size; i++){
+                        total_size += recv_counts[i];
+                        recv_counts[i] *= sizeof(Range);
+                    }
+
+                    displs[0] = 0;
+                    for(size_t i = 1; i<challengers_size; i++){
+                        displs[i] = displs[i-1] + recv_counts[i-1];
+                    }
+
+                }
+
+                std::vector<Range> all_ranges;
+                if(challengers_rank == 0){
+                    all_ranges = std::vector<Range>(total_size);
+
+                }
+                MPI_Gatherv(&local_ranges[0], sizeof(Range)*local_size, MPI_BYTE, &all_ranges[0], recv_counts, displs, MPI_BYTE, 0, chall_comm);
+                if(challengers_rank == 0){
+                    for(auto f: all_ranges){
+                        f.display();
+                    }
+
+                }
+                
+
+
             }
+
+
+
         }
+        break;
 
 
     }
-
 
 
     if(world_rank != gm_rank){

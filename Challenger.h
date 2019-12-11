@@ -30,6 +30,7 @@ public:
     Guess get_guess();
     void update(Guess &last_guess, Evaluation last_evaluation);
     void display();
+    void get_ranges(std::vector<Range> &ranges);
 
 };
 
