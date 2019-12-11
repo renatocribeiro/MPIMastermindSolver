@@ -72,18 +72,14 @@ int main(int argc, char *argv[]) {
     //INIT GUESSES
     if (world_rank != 0 and status == -1){
 
-        std::vector<Range> partitions;
+        std::vector<Range> new_ranges;
         Range local_range;
         auto tot = pow(nbr_colors, size_secret);
         if(challengers_rank == 0){
-            Challenger::generate_partitions(partitions, challengers_size, tot);
-/*            for(Range f: partitions){
-                std::cout<<f.from<<", "<<f.end<<std::endl;
-
-            }*/
+            Challenger::generate_new_ranges(new_ranges, challengers_size, tot);
         }
 
-        MPI_Scatter(&partitions[0], sizeof(Range), MPI_BYTE, &local_range, sizeof(Range), MPI_BYTE, 0, chall_comm);
+        MPI_Scatter(&new_ranges[0], sizeof(Range), MPI_BYTE, &local_range, sizeof(Range), MPI_BYTE, 0, chall_comm);
         //std::cout<<challengers_rank<<", "<<local_range.from<<", "<<local_range.end<<std::endl;
 
         ch = Challenger(challengers_rank, size_secret, nbr_colors, local_range);
@@ -95,7 +91,9 @@ int main(int argc, char *argv[]) {
     bool finished = false;
     Guess tmp_guess;
     Evaluation tmp_eval;
+    int cnt = 0;
     while (!finished){
+        cnt++;
         if(world_rank != 0){
             tmp_guess = ch.get_guess();
             std::cout<<"id: "<<world_rank<<",  "<<tmp_guess.get_nbr()<<", "<<tmp_guess.to_string()<<std::endl;
@@ -128,29 +126,32 @@ int main(int argc, char *argv[]) {
                 int displs[challengers_size];
                 MPI_Gather(&local_size, 1, MPI_INT, &recv_counts[0], 1, MPI_INT, 0, chall_comm);
                 int total_size = 0;
+                std::vector<Range> all_ranges;
                 if(challengers_rank == 0){
 
                     //recv_counts[0] = 3; recv_counts[1] = 2; recv_counts[2] = 1;
+                    displs[0] = 0;
                     for(size_t i = 0; i<challengers_size; i++){
                         total_size += recv_counts[i];
                         recv_counts[i] *= sizeof(Range);
+                        if(i>0)displs[i] = displs[i-1] + recv_counts[i-1];
                     }
-
-                    displs[0] = 0;
-                    for(size_t i = 1; i<challengers_size; i++){
-                        displs[i] = displs[i-1] + recv_counts[i-1];
-                    }
-
-                }
-
-                std::vector<Range> all_ranges;
-                if(challengers_rank == 0){
                     all_ranges = std::vector<Range>(total_size);
 
+
                 }
+
                 MPI_Gatherv(&local_ranges[0], sizeof(Range)*local_size, MPI_BYTE, &all_ranges[0], recv_counts, displs, MPI_BYTE, 0, chall_comm);
+                std::vector<Range> new_ranges;
+                std::vector<int> new_range_distr;
+
                 if(challengers_rank == 0){
                     for(auto f: all_ranges){
+                        f.display();
+                    }
+                    std::cout<<"___"<<std::endl;
+                    Challenger::generate_new_ranges(new_ranges, new_range_distr, all_ranges, challengers_size);
+                    for(auto f: new_ranges){
                         f.display();
                     }
 
@@ -163,6 +164,7 @@ int main(int argc, char *argv[]) {
 
 
         }
+        if (cnt>1)
         break;
 
 

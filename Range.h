@@ -12,6 +12,10 @@ struct Range {
     type_guess from;
     type_guess end;
     void display();
+    Range(){};
+    Range(type_guess &new_from, type_guess &new_end);
+    //Range(type_guess new_from, type_guess new_end);
+    type_guess size();
 
 };
 
