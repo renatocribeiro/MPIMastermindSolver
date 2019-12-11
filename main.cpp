@@ -7,6 +7,7 @@
 #include "Guess.h"
 #include "Challenger.h"
 #include "Gamemaster.h"
+#include "Range.h"
 
 
 int main(int argc, char *argv[]) {
@@ -71,17 +72,24 @@ int main(int argc, char *argv[]) {
     //INIT GUESSES
     if (world_rank != 0 and status == -1){
 
-        std::vector<type_guess> partitions;
-        type_guess local_partition[2];
+        std::vector<Range> partitions;
+        Range local_range;
         auto tot = pow(nbr_colors, size_secret);
         if(challengers_rank == 0){
             Challenger::generate_partitions(partitions, challengers_size, tot);
+/*            for(Range f: partitions){
+                std::cout<<f.from<<", "<<f.end<<std::endl;
+
+            }*/
         }
 
-        MPI_Scatter(&partitions[0], 2, MPI_UNSIGNED_LONG_LONG, &local_partition[0], 2, MPI_UNSIGNED_LONG_LONG, 0, chall_comm);
+        MPI_Scatter(&partitions[0], sizeof(Range), MPI_BYTE, &local_range, sizeof(Range), MPI_BYTE, 0, chall_comm);
+        //std::cout<<challengers_rank<<", "<<local_range.from<<", "<<local_range.end<<std::endl;
 
-        ch = Challenger(challengers_rank, size_secret, nbr_colors, local_partition);
+        ch = Challenger(challengers_rank, size_secret, nbr_colors, local_range);
+        //ch.display();
     }
+
 
 
     bool finished = false;
@@ -115,6 +123,7 @@ int main(int argc, char *argv[]) {
 
 
     }
+
 
 
     if(world_rank != gm_rank){
