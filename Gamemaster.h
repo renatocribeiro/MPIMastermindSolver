@@ -19,7 +19,7 @@ class Gamemaster {
 
     public:
         Gamemaster(){}
-        Gamemaster(int size_secret, int nbr_colors, int nbr_challengers);
+        Gamemaster(int size_secret, int nbr_colors, int nbr_challengers, int &hardcoded_secret);
         Guess pick_guess(std::vector<Guess> guesses);
         Evaluation evaluate(Guess &guess);
         Guess get_secret();

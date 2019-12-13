@@ -47,7 +47,7 @@ Guess Challenger::get_guess(){
     }else{
         //std::cout<<"chid: "<<_chall_id<<" not empty checking: from"<<_from<<", to: "<<_end<<std::endl;
 
-        for(size_t r = 0; r<_ranges.size(); r++){
+        for(size_t r = _ranges.size(); r-- > 0;){
             for(type_guess i = _ranges[r].from; i<_ranges[r].end; i++) {
                 Guess tmp_guess = Guess(i, _size_secret, _nbr_colors);
                 bool pl = _is_plausible(tmp_guess);
@@ -57,7 +57,8 @@ Guess Challenger::get_guess(){
                     return tmp_guess;
                 }
             }
-            _ranges[r].from = _ranges[r].end;
+            _ranges.pop_back();
+            //_ranges[r].from = _ranges[r].end;
         }
 
 
@@ -85,28 +86,41 @@ void Challenger::get_ranges(std::vector<Range> & ranges) {
     ranges = std::move(_ranges);
 }
 
-void Challenger::generate_new_ranges(std::vector<Range> & new_ranges, std::vector<int> &new_range_distr, std::vector<Range> & old_ranges, int & challengers_size) {
+void Challenger::set_ranges(std::vector<Range> & ranges) {
+    _ranges = std::move(ranges);
+}
 
+void Challenger::generate_new_ranges(std::vector<Range> & new_ranges, std::vector<int> &new_range_distr, std::vector<Range> & old_ranges, int & challengers_size) {
+/*
+    std::cout<<"old ranges:"<<std::endl;
+    for(auto f: old_ranges){
+        f.display();
+    }
+*/
+
+    //std::cout<<"end;old ranges:"<<std::endl;
 
     type_guess total = 0;
     for(auto f: old_ranges) total += f.end - f.from;
 
     std::vector<type_guess> local;
     Challenger::generate_partitions(local, challengers_size, total);
+    //std::cout<<"parts: ";for(auto f: local){std::cout<<f<<", ";}std::cout<<std::endl;
 
     new_range_distr = std::vector<int>(challengers_size, 0);
     Range current_range = old_ranges.back();
     old_ranges.pop_back();
     int current_partition;
     type_guess diff;
+    //std::cout<<"___"<<std::endl;
     for(size_t i = 0; i<local.size(); i++){
         current_partition = local[i];
         while(current_partition > 0){
-            std::cout<<"i: "<<i<<" cpartion: "<<current_partition<<std::endl;
+            //current_range.display();
             if(current_range.size() > current_partition){
-                std::cout<<">>>"<<"crangeize: "<<current_range.size()<<std::endl;
+                //std::cout<<"up: "<<current_range.size()<<", "<<current_partition<<std::endl;
                 diff = current_range.size() - current_partition;
-                current_partition = diff;
+                current_partition = 0;
                 Range new_range;
                 new_range.from = current_range.from;
                 new_range.end = current_range.end - diff;
@@ -114,23 +128,26 @@ void Challenger::generate_new_ranges(std::vector<Range> & new_ranges, std::vecto
                 current_range.from = current_range.end - diff;
             }
             else if(current_range.size() < current_partition){
-                std::cout<<"<<<"<<"crangeize: "<<current_range.size()<<std::endl;
+                //std::cout<<"down: "<<current_range.size()<<", "<<current_partition<<std::endl;
                 current_partition -= current_range.size();
                 new_ranges.push_back(current_range);
                 current_range = old_ranges.back();
                 old_ranges.pop_back();
             }
             else {
-                std::cout<<"==="<<"crangeize: "<<current_range.size()<<std::endl;
+                //std::cout<<"eq: "<<current_range.size()<<", "<<current_partition<<std::endl;
                 current_partition = 0;
                 new_ranges.push_back(current_range);
                 current_range = old_ranges.back();
                 old_ranges.pop_back();
             }
             new_range_distr[i]++;
+/*            std::cout<<"new_ranges: ";for(auto f: new_ranges){std::cout<<f.from<<"->"<<f.end<<", ";}std::cout<<std::endl;
+            std::cout<<"crrent part: "<<current_partition<<std::endl;*/
         }
 
     }
+    //std::cout<<"end"<<std::endl;
 
 
 

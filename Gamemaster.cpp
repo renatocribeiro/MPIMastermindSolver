@@ -9,11 +9,18 @@
 #include <random>
 
 
-Gamemaster::Gamemaster(int size_secret, int nbr_colors, int nbr_challengers) {
+Gamemaster::Gamemaster(int size_secret, int nbr_colors, int nbr_challengers, int &hardcoded_secret) {
     _size_secret = size_secret;
-    srand(time(0));
-    type_guess tmp = (type_guess) (rand() % static_cast<type_guess>(pow(nbr_colors, size_secret) + 1));
+    type_guess tmp;
+    if (hardcoded_secret != -1){
+        tmp = hardcoded_secret;
+    }else {
+        srand(time(0));
+         tmp = (type_guess) (rand() % static_cast<type_guess>(pow(nbr_colors, size_secret) + 1));
+    }
     _secret = Guess(tmp, size_secret, nbr_colors);
+
+
     _nbr_challengers = nbr_challengers;
 }
 

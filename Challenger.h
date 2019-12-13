@@ -31,6 +31,7 @@ public:
     void update(Guess &last_guess, Evaluation last_evaluation);
     void display();
     void get_ranges(std::vector<Range> &ranges);
+    void set_ranges(std::vector<Range> &ranges);
     static void generate_new_ranges(std::vector<Range> &new_ranges, std::vector<int> &new_range_distr,  std::vector<Range> &old_ranges, int &challengers_size);
     static void generate_new_ranges(std::vector<Range> &new_ranges, int challengers_size, type_guess total_guesses_left);
 
