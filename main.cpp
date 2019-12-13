@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
     }
 
     if(world_size < 2){
+        printf("You need more than 1 node to run this program.");
         return 0;
     }
 
@@ -67,11 +68,16 @@ int main(int argc, char *argv[]) {
 
     //GAME MASTER BEGINS
     if (world_rank == gm_rank) {
-        printf("Solving for a secret of size %u and %u colors. Re-generation of ranges is %s.\n",
-                size_secret, nbr_colors, (regen) ? "ON" : "OFF");
+        printf("Welcome to Master Mind solver.\n");
+        printf("Solving for a secret of size %u with %u different colors.\n"
+               "Re-generation of ranges is %s and you chose a %s secret.\n\n\n",
+                size_secret, nbr_colors, (regen) ? "ON" : "OFF", (hardcoded_secret == -1) ? "random" : "fixed");
         gm = Gamemaster(size_secret, nbr_colors, world_size, hardcoded_secret);
         gathered_guesses = std::vector<Guess>(world_size);
-        std::cout<<"Secret: "<<gm.get_secret().get_nbr()<<"->"<<gm.get_secret().to_string()<<std::endl;
+        //std::cout<<"Secret: "<<gm.get_secret().get_nbr()<<"->"<<gm.get_secret().to_string()<<std::endl;
+        printf("[Gamemaster picks the secret number %llu, represented as %s.]\n\n",
+                gm.get_secret().get_nbr(),
+                gm.get_secret().to_string().c_str());
         status = -1;
     }
 
@@ -88,10 +94,8 @@ int main(int argc, char *argv[]) {
         }
 
         MPI_Scatter(&new_ranges[0], sizeof(Range), MPI_BYTE, &local_range, sizeof(Range), MPI_BYTE, 0, chall_comm);
-        //std::cout<<challengers_rank<<", "<<local_range.from<<", "<<local_range.end<<std::endl;
 
         ch = Challenger(challengers_rank, size_secret, nbr_colors, local_range);
-        //ch.display();
     }
 
 
@@ -99,19 +103,41 @@ int main(int argc, char *argv[]) {
     bool finished = false;
     Guess tmp_guess;
     Evaluation tmp_eval;
+    int cnt = 0;
     while (!finished){
+        if(world_rank == 0) printf("\n-----Round %u-----\n", ++cnt);
+
         if(world_rank != 0){
             tmp_guess = ch.get_guess();
-            std::cout<<"id: "<<world_rank<<",  "<<tmp_guess.get_nbr()<<", "<<tmp_guess.to_string()<<std::endl;
+            //std::cout<<"id: "<<world_rank<<",  "<<tmp_guess.get_nbr()<<", "<<tmp_guess.to_string()<<std::endl;
+            if(tmp_guess.is_valid()){
+                printf("Challenger %u proposes guess %llu -> %s\n",
+                       challengers_rank,
+                       tmp_guess.get_nbr(),
+                       tmp_guess.to_string().c_str());
+            }else{
+                printf("Challenger %u didn't find a guess.\n",
+                        challengers_rank);
+            }
+
         }
         MPI_Gather(&tmp_guess, sizeof(Guess), MPI_BYTE, &gathered_guesses[0], sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
 
 
         if (world_rank == 0){
             tmp_guess = gm.pick_guess(gathered_guesses);
-            std::cout<<"gm picked: "<<tmp_guess.get_nbr()<<"__"<<tmp_guess.to_string()<<std::endl;
+
             tmp_eval = gm.evaluate(tmp_guess);
-            tmp_eval.display();
+            if(tmp_eval.is_perfect(size_secret)){
+                printf("\n\nCongratulations! You found the secret in %u rounds.\n", cnt);
+
+            }else{
+                printf("Gamemaster picks guess %s. He says there are %u perfect and %u color only pegs.\n",
+                       tmp_guess.to_string().c_str(),
+                       tmp_eval.perfect,
+                       tmp_eval.only_color);
+            }
+
         }
 
 
