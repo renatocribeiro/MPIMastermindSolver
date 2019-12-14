@@ -22,7 +22,6 @@ private:
 public:
     Guess(){};
     Guess(type_guess guess_int, int size_secret, int nbr_colors);
-    void display();
     bool is_valid();
     type_guess get_nbr();
     std::vector<std::string> conv();

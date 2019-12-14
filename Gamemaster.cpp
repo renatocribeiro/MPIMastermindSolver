@@ -4,11 +4,17 @@
 
 #include "Gamemaster.h"
 #include "Utils.h"
-#include <iostream>
 #include <algorithm>
 #include <random>
 
-
+/**
+ * Constructs a Gamemaster instance with a given length of secret, number of colors,
+ * number of challengers and eventually a fixed secret. If no fixed secret is given, one will be randomly created.
+ * @param size_secret length of secret
+ * @param nbr_colors number of colors in secret
+ * @param nbr_challengers number of challengers in game
+ * @param hardcoded_secret optional fixed secret passed as argument when the program is executed
+ */
 Gamemaster::Gamemaster(int size_secret, int nbr_colors, int nbr_challengers, int &hardcoded_secret) {
     _size_secret = size_secret;
     type_guess tmp;
@@ -24,6 +30,11 @@ Gamemaster::Gamemaster(int size_secret, int nbr_colors, int nbr_challengers, int
     _nbr_challengers = nbr_challengers;
 }
 
+/**
+ * Picks a random valid guess from a vector of guesses previously gathered from the challengers.
+ * @param guesses vector of gathered guesses
+ * @return random valid guess
+ */
 Guess Gamemaster::pick_guess(std::vector<Guess> guesses) {
     Guess res;
     srand(time(0));
@@ -36,11 +47,20 @@ Guess Gamemaster::pick_guess(std::vector<Guess> guesses) {
     return res;
 }
 
+/**
+ * Returns the evaluation of the secret against another guess.
+ * @param guess other guess
+ * @return evaluation of secret and other guess
+ */
 Evaluation Gamemaster::evaluate(Guess &guess) {
     return _secret.evaluate(guess, _size_secret);
 }
 
 
+/**
+ * Returns the gamemaster's secret.
+ * @return secret/guess integer
+ */
 Guess Gamemaster::get_secret() {
     return _secret;
 }

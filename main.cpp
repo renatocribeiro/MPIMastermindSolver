@@ -94,7 +94,6 @@ int main(int argc, char *argv[]) {
         }
 
         MPI_Scatter(&new_ranges[0], sizeof(Range), MPI_BYTE, &local_range, sizeof(Range), MPI_BYTE, 0, chall_comm);
-
         ch = Challenger(challengers_rank, size_secret, nbr_colors, local_range);
     }
 
@@ -104,12 +103,14 @@ int main(int argc, char *argv[]) {
     Guess tmp_guess;
     Evaluation tmp_eval;
     int cnt = 0;
+
+    //MAIN LOOP
     while (!finished){
         if(world_rank == 0) printf("\n-----Round %u-----\n", ++cnt);
 
+        //ALL PLAUSIBLE GUESSES ARE COMPUTED AND GATHERED IN THE GAMEMASTER
         if(world_rank != 0){
             tmp_guess = ch.get_guess();
-            //std::cout<<"id: "<<world_rank<<",  "<<tmp_guess.get_nbr()<<", "<<tmp_guess.to_string()<<std::endl;
             if(tmp_guess.is_valid()){
                 printf("Challenger %u proposes guess %llu -> %s\n",
                        challengers_rank,
@@ -124,6 +125,7 @@ int main(int argc, char *argv[]) {
         MPI_Gather(&tmp_guess, sizeof(Guess), MPI_BYTE, &gathered_guesses[0], sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
 
 
+        //GAMEMASTER PICKS A GUESS AT RANDOM AND SENDS IT BACK ALONG WITH THE EVALUATION
         if (world_rank == 0){
             tmp_guess = gm.pick_guess(gathered_guesses);
 
@@ -144,22 +146,29 @@ int main(int argc, char *argv[]) {
         MPI_Bcast(&tmp_eval, sizeof(Evaluation), MPI_BYTE, 0, MPI_COMM_WORLD);
         finished = tmp_eval.is_perfect(size_secret);
 
+        //UPDATES IF NOT FINISHED
         if (!finished) {
             MPI_Bcast(&tmp_guess, sizeof(Guess), MPI_BYTE, 0, MPI_COMM_WORLD);
             if (world_rank != 0) {
+
+                //UPDATES THE CHALLENGERS LIST OF FAILED GUESSES AND EVALUATIONS
                 ch.update(tmp_guess, tmp_eval);
+
 
                 //RANGES RE-GENERATION
                 if (regen){
                     std::vector<Range> local_ranges;
                     ch.get_ranges(local_ranges);
 
+                    //CHALL'S ROOT GATHERS THE NUMBER OF RANGES EACH CHALL WILL BE SENDING
                     unsigned int local_size = local_ranges.size();
                     int recv_counts[challengers_size];
                     int displs[challengers_size];
                     MPI_Gather(&local_size, 1, MPI_INT, &recv_counts[0], 1, MPI_INT, 0, chall_comm);
                     int total_size = 0;
                     std::vector<Range> all_ranges;
+
+                    //CHALL'S ROOT GATHERS ALL THE RANGES
                     if(challengers_rank == 0){
 
                         displs[0] = 0;
@@ -175,13 +184,14 @@ int main(int argc, char *argv[]) {
                     std::vector<Range> new_ranges;
                     std::vector<int> new_range_distr(challengers_size);
 
+                    //CHALL'S ROOT BALANCES THE RANGES
                     if(challengers_rank == 0){
                         Challenger::generate_new_ranges(new_ranges, new_range_distr, all_ranges, challengers_size);
                     }
 
 
 
-
+                    //CHALL'S ROOT SCATTTERS THE NUMBER OF RANGES IT WILL BE SENDING TO EACH CHALLENGER
                     int local_distr;
                     MPI_Scatter(&new_range_distr[0], 1, MPI_INT, &local_distr, 1, MPI_INT, 0, chall_comm);
 
@@ -189,15 +199,16 @@ int main(int argc, char *argv[]) {
                         displs[0] = 0;
                         for(size_t i = 0; i<challengers_size; i++){
                             new_range_distr[i] *= sizeof(Range);
-
                             if(i>0)displs[i] = displs[i-1] + new_range_distr[i-1];
                         }
                     }
 
 
+                    //CHALL'S ROOT SENDS THE ACTUAL RANGES TO EACH CHALLENGER
                     std::vector<Range> new_ranges_local(local_distr);
                     MPI_Scatterv(&new_ranges[0], &new_range_distr[0], displs, MPI_BYTE, &new_ranges_local[0], sizeof(Range)*local_distr, MPI_BYTE, 0, chall_comm);
 
+                    //CHALLS SET THE NEWLY GENERATED RANGES
                     ch.set_ranges(new_ranges_local);
                 }
 
