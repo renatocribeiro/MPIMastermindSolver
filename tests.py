@@ -6,6 +6,10 @@ import os
 import glob
 import matplotlib.pyplot as plt
 
+"""
+BASIC 'BENCHMARK' SCRIPT
+"""
+
 cmd = "mpiexec -n {} cmake-build-debug/mastermind_hydra c {} s {} r {} h {}"
 
 def bench_runtime():
