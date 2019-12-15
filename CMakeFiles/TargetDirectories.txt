@@ -1,3 +1,0 @@
-/sulb0/rcostari/rtos_2/CMakeFiles/rebuild_cache.dir
-/sulb0/rcostari/rtos_2/CMakeFiles/mastermind_hydra.dir
-/sulb0/rcostari/rtos_2/CMakeFiles/edit_cache.dir
