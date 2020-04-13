@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 BASIC 'BENCHMARK' SCRIPT
 """
 
-cmd = "mpiexec -n {} cmake-build-debug/mastermind_hydra c {} s {} r {} h {}"
+cmd = "mpiexec -n {} cmake-build-debug/mastermind_solver c {} s {} r {} h {}"
 
 def bench_runtime():
     n = 4
