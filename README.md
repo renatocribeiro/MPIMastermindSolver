@@ -1,5 +1,7 @@
 # MPIMastermindSolver
-Implementation of a parallel Mastermind solver using OpenMPI. Inspired from Donald Knuth's article [The Computer as Master Mind](https://www.cs.uni.edu/~wallingf/teaching/cs3530/resources/knuth-mastermind.pdf).
+Implementation of a parallel Mastermind solver using OpenMPI.
+
+Inspired from Donald Knuth's article [The Computer as Master Mind](https://www.cs.uni.edu/~wallingf/teaching/cs3530/resources/knuth-mastermind.pdf).
 
 ## Dependencies
 * CMake 3.15.3-GCCcore-8.3.0
