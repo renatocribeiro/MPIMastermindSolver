@@ -4,10 +4,10 @@
 #include <cmath>
 #include <string>
 
-#include "Guess.h"
-#include "Challenger.h"
-#include "Gamemaster.h"
-#include "Range.h"
+#include "src/Guess.h"
+#include "src/Challenger.h"
+#include "src/Gamemaster.h"
+#include "src/Range.h"
 
 
 int main(int argc, char *argv[]) {
